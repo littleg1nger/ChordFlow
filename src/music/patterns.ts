@@ -22,15 +22,17 @@ export function patternTimeline(c: Chord, id: PatternId, right = voicing(c, 0, 5
     for (let i = 0; i < 8; i++) add(i * 240, 240, [right[[0, 1, 2, 1][i % 4]]], 'R')
   }
   if (id === 'root5') {
-    const root = atOrAbove(c.root, 48 + register * 12)
+    const root = atOrAbove(c.root, 43 + register * 12)
     const fifth = noteAt(interval(c.root, 5, 7), root.midi + 7)
     const eighth = noteAt(c.root, root.midi + 12)
     const notes = [root, fifth, eighth, fifth]
     for (let i = 0; i < 8; i++) add(i * 240, 240, [notes[i % 4]], 'L')
-    add(0, 1920, right, 'R')
+    add(0, 480, right, 'R')
   }
   if (id === 'alberti') {
-    const notes = voicing(c, 0, 48 + register * 12)
+    let floor=43+register*12
+    let notes = voicing(c,0,floor)
+    while(notes.at(-1)!.midi>=right[0].midi) {floor-=12;notes=voicing(c,0,floor)}
     for (let i = 0; i < 8; i++) add(i * 240, 240, [notes[[0, 2, 1, 2][i % 4]]], 'L')
     add(0, 1920, right, 'R')
   }

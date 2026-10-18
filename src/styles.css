@@ -181,6 +181,7 @@ main { flex: 1; min-height: 0; width: 100%; overflow-y: auto; overscroll-behavio
 .pattern-options span { font-size: 10px; }
 .event-step { min-height: 96px; }
 .event-step>span:not(:first-child) { font-size: 12px; }
+.event-step .muted-hand { opacity: .6; }
 @media (max-width: 780px) {
   .app-shell { display: flex; flex-direction: column; }
   .sidebar { flex: 0 0 auto; }

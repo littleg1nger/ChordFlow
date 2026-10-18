@@ -28,6 +28,16 @@ describe('可执行伴奏时间轴', () => {
     expect(compatible('root5',parseChord('Caug'))).toBe(false)
     expect(() => patternTimeline(parseChord('Cdim'),'root5')).toThrow('纯五度')
   })
+  it('Alberti 保持在右手下方，根五八右手及时释放避免两手争用琴键', () => {
+    const c=parseChord('G')
+    const right=voicing(c,0,55)
+    const alberti=patternTimeline(c,'alberti',right)
+    expect(Math.max(...alberti.events.filter(e => e.hand==='L').flatMap(e => e.notes.map(n => n.midi)))).toBeLessThan(right[0].midi)
+    expect(alberti.events.find(e => e.hand==='L')!.notes[0].label).toBe('G2')
+    const root5=patternTimeline(c,'root5',right)
+    expect(root5.events.find(e => e.hand==='R')!.duration).toBe(480)
+    expect(root5.events.filter(e => e.hand==='L')[2].tick).toBe(480)
+  })
   it('三拍子的左/右手位置与时值', () => {
     const t = patternTimeline(parseChord('Am'), 'waltz')
     expect(t.ticks).toBe(1440)

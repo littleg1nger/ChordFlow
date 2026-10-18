@@ -40,11 +40,11 @@ export default function App() {
   const inProgression = page === 'progressions'
   const current = inProgression ? chords[chordIndex] : single
   const right = inProgression ? voices[chordIndex] : singleRight
-  const bass = leftBass(current,43+s.register*12)
   const timeline = useMemo(() => {
     if (page==='progressions') return chords.every(c => compatible(s.pattern,c)) ? progressionTimeline(chords,s.pattern,s.voicing,s.register,s.barsPerChord) : undefined
     return compatible(s.pattern,single) ? patternTimeline(single,s.pattern,singleRight,s.register) : undefined
   },[page,chords,s.pattern,s.voicing,s.register,s.barsPerChord,single,singleRight])
+  const bass = (page!=='explore' ? timeline?.events.find(e => e.hand==='L' && e.chordIndex===(inProgression?chordIndex:0))?.notes[0] : undefined) ?? leftBass(current,43+s.register*12)
   const options = useMemo(() => ({bpm:s.bpm,hands:s.hands,loops:s.loops,metronome:s.metronome,countIn:s.countIn}),[s.bpm,s.hands,s.loops,s.metronome,s.countIn])
   const config = practiceConfig(s)
   const pageInfo = PAGES.find(p => p.id===page)!
@@ -73,6 +73,7 @@ export default function App() {
   }
   async function playPractice() {
     if(playback.status==='playing') {transport.pause();return}
+    generation.current++;audio.stopAll()
     try {await transport.play();setAudioStatus('音频已开启 · 合成键盘音')}
     catch(e) {setAudioStatus(`音频失败，可点击重试：${(e as Error).message}`)}
   }
@@ -124,7 +125,7 @@ export default function App() {
       {page==='practice' ? <section className="workspace-panel"><Practice data={data} onOpen={openExercise} onCopy={e => {if(data.exercises.length>=100){setNotice('个人练习已达 100 项。');return}update(d => ({...d,exercises:[...d.exercises,{...e,id:crypto.randomUUID(),name:(e.name+'（副本）').slice(0,60),createdAt:new Date().toISOString()}]}))}} onDelete={id => update(d => ({...d,exercises:d.exercises.filter(e => e.id!==id)}))} onFavorite={symbol => {const c=parseChord(symbol);choose(c,c.bass?c.notes.findIndex(n => n.pc===c.bass?.pc):0);setPage('explore')}} onRemoveFavorite={symbol => update(d => ({...d,favorites:d.favorites.filter(c => c!==symbol)}))} onImport={next => {stop();update(() => next)}} onCreate={() => navigate('progressions')}/></section> : <div className="workspace-grid"><section className="workspace-panel" aria-label="和弦学习">
         {page==='explore' ? <Explorer current={current} right={right} bass={bass} inversion={s.inversion} onChoose={choose} onPreview={preview} onStop={stop} favorite={data.favorites.includes(current.symbol)} onFavorite={favorite}/> : <>
           {inProgression && <Progressions config={config} onConfig={next => settings(next)} chords={chords} voices={voices} index={chordIndex} onInspect={index => {if(timeline)void step(index*s.barsPerChord*spec.beats*PPQ)}} onSave={saveExercise} canSave={!!timeline && data.exercises.length<100}/>}
-          <Patterns current={current} onChoose={choose} pattern={s.pattern} onPattern={pattern => settings({pattern})} timeline={timeline} playback={playback} onStep={step} register={s.register} onRegister={register => settings({register})} progression={inProgression}/>
+          <Patterns current={current} onChoose={choose} pattern={s.pattern} onPattern={pattern => settings({pattern})} timeline={timeline} playback={playback} onStep={step} register={s.register} onRegister={register => settings({register})} progression={inProgression} hands={s.hands}/>
         </>}
         <div className="keyboard-heading"><h3>把声音放到琴键上</h3><div className="keyboard-controls"><label>音区<select aria-label="键盘起始音区" value={s.octave} onChange={e => settings({octave:Number(e.target.value)})}><option value={2}>C2–C5</option><option value={3}>C3–C6</option><option value={4}>C4–C7</option></select></label><label>标记<select aria-label="琴键标记" value={s.labels} onChange={e => settings({labels:e.target.value as Settings['labels']},false)}><option value="notes">音名</option><option value="degrees">相对度数</option></select></label></div></div>
         <Piano chord={current} right={right} bass={bass} active={active} octave={s.octave} labels={s.labels} onNote={playNote}/>
