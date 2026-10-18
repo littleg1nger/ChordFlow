@@ -1,11 +1,12 @@
+import type { ReactNode } from 'react'
 import { CHORD_TYPES, ROOTS } from '../data/chords'
 import { PATTERNS, type PatternId } from '../data/patterns'
 import { chord, type Chord } from '../music/theory'
 import { beatLabel, compatible, PPQ, type Timeline } from '../music/patterns'
 import type { PlaybackSnapshot } from '../audio/transport'
 
-type Props = { current: Chord; onChoose: (c: Chord) => void; pattern: PatternId; onPattern: (id: PatternId) => void; timeline?: Timeline; playback: PlaybackSnapshot; onStep: (tick: number) => void; register: number; onRegister: (n: number) => void; progression?: boolean; hands: 'both' | 'left' | 'right' }
-export function Patterns({ current, onChoose, pattern, onPattern, timeline, playback, onStep, register, onRegister, progression,hands }: Props) {
+type Props = { current: Chord; onChoose: (c: Chord) => void; pattern: PatternId; onPattern: (id: PatternId) => void; timeline?: Timeline; playback: PlaybackSnapshot; onStep: (tick: number) => void; register: number; onRegister: (n: number) => void; progression?: boolean; hands: 'both' | 'left' | 'right'; instrument: ReactNode }
+export function Patterns({ current, onChoose, pattern, onPattern, timeline, playback, onStep, register, onRegister, progression,hands,instrument }: Props) {
   const spec = PATTERNS.find(p => p.id === pattern)!
   const barTicks = spec.beats * PPQ
   const relativeTick = Math.max(0, playback.tick) % barTicks
@@ -24,7 +25,7 @@ export function Patterns({ current, onChoose, pattern, onPattern, timeline, play
     <div className="pattern-options">{PATTERNS.slice(0,5).map(patternButton)}</div>
     <details className="extended-patterns" open={PATTERNS.findIndex(p=>p.id===pattern)>=5?true:undefined}><summary>更多分解与伴奏 · 6 种扩展音型</summary><div className="pattern-options">{PATTERNS.slice(5).map(patternButton)}</div></details>
     <div className="pattern-instructions"><div><span className="meter">{spec.beats}<small>4</small></span><div><h3>{spec.name}</h3><p>{spec.subtitle} · 建议从 {spec.bpm} BPM 开始</p></div></div><label>演奏音区<select aria-label="演奏音区" value={register} onChange={e => onRegister(Number(e.target.value))}><option value={-1}>低八度</option><option value={0}>默认音区</option><option value={1}>高八度</option></select></label></div>
-    <p className="pattern-tip">{spec.tip}</p>
+    {instrument}
     {!timeline ? <p className="error" role="alert">{pattern==='seventhArp'?'当前和弦不适用四音分解，需有四个构成音。':pattern==='root5'?'当前和弦不适用根五八，需含纯五度。请选择柱式或三拍子。':'当前和弦不适用此音型，请选择兼容的音型；三音上下行与 Alberti 仅用于三音配置。'}</p> : <>
       <div className="beat-heading"><h3>一小节，逐步弹</h3><span>{playback.tick < 0 ? '预备拍' : `第 ${bar + 1} 小节 · 第 ${Math.floor(relativeTick / PPQ) + 1} 拍`}</span></div>
       <div className="beat-track" aria-label="节拍播放头" data-tick={Math.round(playback.tick)} data-status={playback.status}><div className="beat-playhead" style={{ left: `${relativeTick / barTicks * 100}%` }} />{Array.from({ length: spec.beats },(_,i) => <span key={i} className={Math.floor(relativeTick/PPQ) === i ? 'current-beat' : ''}>{i+1}<small>拍</small></span>)}</div>

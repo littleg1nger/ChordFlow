@@ -37,5 +37,5 @@ test('分解音型播放、暂停继续、停止、参数切换和七和弦兼�
   await expect(page.locator('.event-steps')).toContainText('F4')
   await page.getByRole('button',{name:'播放练习',exact:true}).click()
   await page.getByRole('button', { name: /和弦探索/ }).click()
-  await expect(page.getByRole('button', { name: '试听当前和弦', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: '同时弹', exact: true })).toBeVisible()
 })
