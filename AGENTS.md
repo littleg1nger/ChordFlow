@@ -1,4 +1,4 @@
-# 和序 · Chordflow 工程说明
+# ChordFlow 工程说明
 
 ## 结构与命令
 

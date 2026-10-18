@@ -1,4 +1,4 @@
-# 和序 · Chordflow
+# ChordFlow
 
 从和弦开始，弹出自己的伴奏。From chords to accompaniment.
 

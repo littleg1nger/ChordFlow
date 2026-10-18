@@ -1,4 +1,4 @@
-# 和序 · Chordflow 部署说明
+# ChordFlow 部署说明
 
 本轮只准备本地可运行项目和部署文件。没有连接服务器、创建远程仓库、注册域名或执行上线。服务器与 SSH 信息未知，以下命令待提供信息并明确要求上线后执行。
 
@@ -6,7 +6,7 @@
 
 纯静态 SPA，默认部署于域名根路径 `/`，不需要 API、数据库或前端环境变量。浏览器中不应放任何秘密。Vite base 维持默认 `/`；当前没有声明支持子路径，不能只移动文件到 `/chordflow/` 就视为支持。
 
-字体与品牌素材随 `public/` 进入构建产物：`/fonts/` 下有两份 WOFF2、来源校验清单和字体许可，根目录有 brand-mark.svg、wordmark.svg、favicon.svg。无需外部字体 CDN。Nginx 使用标准 MIME 表提供字体，并对 `/fonts/` 缺失文件返回 404。`test:smoke` 检查字体、字标的 MIME / SHA-256 及许可；普通部署无需 Python 或重新生成字体。
+字体与品牌素材随 `public/` 进入构建产物：`/fonts/` 下有两份 WOFF2、来源校验清单和字体许可，根目录有 brand-mark.svg、favicon.svg。ChordFlow 英文字名使用本地 Geist 字体。无需外部字体 CDN。Nginx 使用标准 MIME 表提供字体，并对 `/fonts/` 缺失文件返回 404。`test:smoke` 检查字体的 MIME / SHA-256、品牌图标与许可；普通部署无需 Python 或重新生成字体。
 
 Docker 使用两阶段构建：`node:24.15.0-alpine` 安装锁定依赖并构建，`nginx:1.30.6-alpine` 最终仅提供 `dist/`。固定补丁版本，构建产物可通过 Git 短 SHA 镜像标签和 OCI revision 追踪；这些是标签固定，不是镜像 digest 固定。正式发布可记录 `docker image inspect` 返回的镜像 ID / digest。
 

@@ -52,7 +52,7 @@ export function validateConfig(value: unknown): PracticeConfig {
 }
 export function validateData(value: unknown): UserData {
   const v = object(value,'备份')
-  if (v.version !== 1 || v.format !== 'chordflow-backup') throw new Error('不支持此文件格式或版本；需要和序 v1 JSON 备份。')
+  if (v.version !== 1 || v.format !== 'chordflow-backup') throw new Error('不支持此文件格式或版本；需要ChordFlow v1 JSON 备份。')
   const settings = object(v.settings,'设置')
   const c = parseChord(text(settings.chord,'和弦',32))
   const config = validateConfig(settings)
@@ -79,9 +79,9 @@ export function validateData(value: unknown): UserData {
   }
 }
 export function parseBackup(raw: string): UserData {
-  if (new TextEncoder().encode(raw).length > MAX_BACKUP_BYTES) throw new Error('文件超过 1 MB，请选择较小的和序 JSON 备份。')
+  if (new TextEncoder().encode(raw).length > MAX_BACKUP_BYTES) throw new Error('文件超过 1 MB，请选择较小的ChordFlow JSON 备份。')
   let parsed: unknown
-  try { parsed = JSON.parse(raw) } catch { throw new Error('无法读取 JSON，请选择完整的和序备份文件。') }
+  try { parsed = JSON.parse(raw) } catch { throw new Error('无法读取 JSON，请选择完整的ChordFlow备份文件。') }
   return validateData(parsed)
 }
 export function loadData(storage: Pick<Storage,'getItem'>): { data: UserData; warning: string } {

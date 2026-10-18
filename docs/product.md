@@ -1,4 +1,4 @@
-# 和序 · Chordflow 产品范围
+# ChordFlow 产品范围
 
 从和弦开始，弹出自己的伴奏。From chords to accompaniment.
 

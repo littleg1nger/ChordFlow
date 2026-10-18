@@ -36,7 +36,7 @@ export function Piano({ chord, right, bass, active, range, labels, onNote,events
   },[focusMidis,start,end])
   return <div ref={scrollRef} className={styles.scroll} data-testid="piano" data-range-start={start} data-range-end={end} aria-label="交互钢琴，琴键可用 Tab 与回车弹奏">
     <div className={styles.piano} style={{'--white-key-count':white.length} as CSSProperties}>
-      <div className={styles.rail}><img src="/wordmark.svg" width="31" height="17" alt=""/><span>{midiName(start)} — {midiName(end)} · C4 = 中央 C</span></div>
+      <div className={styles.rail}><span className={styles.brand} translate="no">ChordFlow</span><span>{midiName(start)} — {midiName(end)} · C4 = 中央 C</span></div>
       <div className={styles.keys}>
         {keys.map(midi => {
           const isBlack = black(midi)

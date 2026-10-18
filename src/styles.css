@@ -35,11 +35,9 @@ button.primary { background: var(--accent); color: white; border-color: #20242b5
 .app-shell { display: flex; height: 100dvh; overflow: hidden; }
 .sidebar { width: 176px; flex: 0 0 176px; height: 100dvh; padding: 25px 14px 18px; display: flex; flex-direction: column; border-right: 1px solid var(--line); background: #f1f3f6; }
 .brand { display: flex; align-items: center; gap: 10px; margin: 0 6px 35px; text-decoration: none; color: var(--ink); }
-.brand-mark { width: 36px; height: 36px; flex-shrink: 0; }
-.brand-name { display: flex; flex-direction: column; align-items: start; gap: 1px; }
-.brand-wordmark { display: block; width: 49px; height: 25px; object-fit: contain; }
-
-.brand small { display: block; font: 500 11px/1.3 var(--display); letter-spacing: -.2px; color: #545d6b; }
+.brand-mark { width: 28px; height: 28px; flex-shrink: 0; }
+.brand-name { font: 600 17px/1.2 var(--display); letter-spacing: -.65px; white-space: nowrap; }
+.brand-name>span { color: var(--brand); }
 nav { display: flex; flex-direction: column; gap: 6px; }
 nav button { justify-content: start; gap: 10px; padding: 11px 12px; border: 0; background: transparent; min-height: 44px; box-shadow: none; color: var(--muted); }
 nav button.active { background: white; color: var(--ink); font-weight: 550; box-shadow: 0 1px 3px #20242b0a, inset 0 0 0 1px #20242b08; }
@@ -61,11 +59,10 @@ main { width: 100%; max-width: 1700px; margin: 0 auto; padding: 18px 24px; overf
 .quality-field { width: 246px; }
 .chord-search { width: 280px; display: flex; flex-direction: column; gap: 4px; }
 .chord-search>div { display: flex; align-items: center; min-height: 38px; border: 1px solid var(--control-line); border-radius: 6px; background: white; box-shadow: inset 0 1px 2px #20242b04; }
-.chord-search>div:focus-within { border-color: var(--focus); box-shadow: 0 0 0 3px #416ccb14; }
-.chord-search>div>svg { flex-shrink: 0; margin-left: 10px; color: #7a8390; }
-.chord-search input { flex: 1; width: 0; min-height: 36px; border: 0; border-radius: 4px 0 0 4px; font-size: 13px; background: transparent; box-shadow: none; padding-left: 7px; }
+.chord-search>div:focus-within { outline: 2px solid var(--focus); outline-offset: 3px; }
+.chord-search input { flex: 1; width: 0; min-height: 36px; border: 0; border-radius: 5px 0 0 5px; background: transparent; box-shadow: none; padding: 6px 10px; }
 .chord-search input:focus-visible { outline: none; }
-.chord-search button { flex: 0 0 36px; min-height: 28px; margin-right: 3px; padding: 4px 6px; border: 0; border-left: 1px solid var(--line); border-radius: 0 3px 3px 0; background: transparent; color: var(--muted); box-shadow: none; }
+.chord-search button { flex: 0 0 36px; min-height: 36px; padding: 6px; border: 0; border-radius: 0 5px 5px 0; background: transparent; color: var(--muted); box-shadow: none; }
 .chord-search button:focus-visible { outline-offset: -2px; }
 .chord-overview { display: flex; align-items: center; gap: 30px; padding: 12px 0; }
 .chord-identity { min-width: 210px; }
@@ -256,7 +253,7 @@ input[type=number],.playback-state,.event-beat { font-variant-numeric: tabular-n
 @media (max-width: 780px) {
   .app-shell { height: auto; min-height: 100dvh; display: block; overflow: visible; }
   .sidebar { width: 100%; height: auto; padding: max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 0 max(12px,env(safe-area-inset-left)); border-right: 0; border-bottom: 1px solid var(--line); }
-  .brand { margin: 0 0 8px; gap: 8px; }.brand-mark { width: 30px; height: 30px; }.brand-wordmark { width: 42px; height: 22px; }.brand small { font-size: 10px; }
+  .brand { margin: 0 0 8px; gap: 8px; }.brand-mark { width: 28px; height: 28px; }.brand-name { font-size: 17px; }
   nav { flex-direction: row; gap: 2px; }nav button { flex: 1; padding: 8px 4px; gap: 6px; min-height: 44px; font-size: 13px; border-radius: 4px 4px 0 0; }nav svg { width: 17px; }
   .help-link { display: none; }.main-shell { height: auto; }.topbar { height: 48px; padding: 0 14px; }h1 { font-size: 17px; }.local-badge { font-size: 11px; }
   main { padding: 14px 14px max(20px,env(safe-area-inset-bottom)); overflow: visible; scrollbar-gutter: auto; }

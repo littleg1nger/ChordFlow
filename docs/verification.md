@@ -1,4 +1,4 @@
-# 和序 · Chordflow 验证记录
+# ChordFlow 验证记录
 
 环境：Windows，Node 24.15.0，npm 11.12.1。Git 沿用既有用户配置；未创建远程。
 

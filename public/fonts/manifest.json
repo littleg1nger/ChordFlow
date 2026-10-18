@@ -14,11 +14,5 @@
     "sha256": "2cd5940fa00d90243105b55f5dc5fb5b7c77406b53be4fa839254784534e0307",
     "bytes": 144524,
     "family": "Chordflow Sans SC"
-  },
-  {
-    "file": "../wordmark.svg",
-    "source": "https://github.com/atelier-anchor/smiley-sans/releases/download/v2.0.1/smiley-sans-v2.0.1.zip",
-    "font": "SmileySans-Oblique.ttf",
-    "sha256": "2ffd4d3ee944ae0ba1878793d0f68c0dea86f52ff4dea1d884f6e02160a1a7aa"
   }
 ]

@@ -149,7 +149,7 @@ export default function App() {
   const patternsPanel = <Patterns instrument={practiceInstrument} current={current} onChoose={choose} pattern={s.pattern} onPattern={pattern => settings({pattern,...(PATTERNS.find(p=>p.id===pattern)!.beats!==4?{fill:'none' as const}:{})})} timeline={timeline} playback={playback} onStep={step} register={s.register} onRegister={register => settings({register})} progression={inProgression} hands={s.hands}/>
   return <div className="app-shell" onPointerDownCapture={e=>{if(e.currentTarget.dataset.input!=='pointer')e.currentTarget.dataset.input='pointer'}} onKeyDownCapture={e=>{if(e.currentTarget.dataset.input!=='keyboard')e.currentTarget.dataset.input='keyboard'}}>
     <a className="skip-link" href="#workspace">跳到练习区</a>
-    <aside className="sidebar"><a className="brand" href="#" aria-label="和序 · Chordflow" onClick={() => navigate('explore')}><Brand/></a><nav aria-label="主导航">{PAGES.map(p => <button key={p.id} className={page===p.id?'active':''} aria-current={page===p.id?'page':undefined} onClick={() => navigate(p.id)}><Icon name={p.icon}/>{p.name}</button>)}</nav><button className="help-link" onClick={() => {const help=document.getElementById('help') as HTMLDetailsElement;help.open=true;help.scrollIntoView({behavior:'smooth'})}}><Icon name="help" size={17}/>使用与数据说明</button></aside>
+    <aside className="sidebar"><a className="brand" href="#" aria-label="ChordFlow" onClick={() => navigate('explore')}><Brand/></a><nav aria-label="主导航">{PAGES.map(p => <button key={p.id} className={page===p.id?'active':''} aria-current={page===p.id?'page':undefined} onClick={() => navigate(p.id)}><Icon name={p.icon}/>{p.name}</button>)}</nav><button className="help-link" onClick={() => {const help=document.getElementById('help') as HTMLDetailsElement;help.open=true;help.scrollIntoView({behavior:'smooth'})}}><Icon name="help" size={17}/>使用与数据说明</button></aside>
     <div className="main-shell"><header className="topbar"><h1>{pageInfo.name}</h1><span className="local-badge"><i/>本地练习 · 自动保存</span></header>
     <main id="workspace" tabIndex={-1}>
       {warning && <p className="error" role="alert">{warning}</p>}
@@ -158,7 +158,7 @@ export default function App() {
         {page==='explore' ? <Explorer current={current} right={right} bass={bass} inversion={s.inversion} onChoose={choose} favorite={data.favorites.includes(current.symbol)} onFavorite={favorite}>{keyboard}</Explorer> : inProgression ? <Progressions config={config} onConfig={next => settings(next)} chords={chords} voices={voices} index={chordIndex} onInspect={index => {if(timeline)void step(index*s.barsPerChord*spec.beats*PPQ)}} onSave={saveExercise} canSave={!!timeline && data.exercises.length<100}>{patternsPanel}</Progressions> : patternsPanel}
       </section>}
       <details id="help" className="help-panel">
-        <summary>关于和序 · Chordflow 与本地数据</summary>
+        <summary>关于ChordFlow 与本地数据</summary>
         <p>键盘音区只调整显示，不改变演奏音高；演奏音区在音型设置中调整。C4 = MIDI 60，A4 = 440 Hz。默认使用 Salamander 采样钢琴，首次点击加载本地音源；失败时明确降级为合成音，可重试。静音时检查主音量与设备音量。琴键可通过 Tab 聚焦、Enter 或 Space 弹奏。</p>
         <p>教学内容为原创教学示例。指法因手型和连接而异。没有 MIDI 或麦克风识别，不测量正确率。数据仅在当前浏览器保存，不自动跨设备同步；可在“我的练习”导入与导出 JSON 备份。</p>
         <p>切换页面、和弦、音型、速度、手别与演奏音区会停止并回到开头；暂停保留当前位置。一次只有一个主动播放会话，点击琴键的短音可叠加。后台自动暂停，需要回到页面手动继续。持续循环中，每完成一整组进行或一小节单和弦音型计一轮。</p>
