@@ -49,3 +49,23 @@ test('手机操作顺序与自然滚动，试听状态和页面切换',async({pa
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
   }
 })
+
+test('长进行只在工作区滚动，底部不产生外层空白',async({page})=>{
+  await page.setViewportSize({width:2048,height:1024})
+  await page.goto('/')
+  await page.getByRole('navigation').getByRole('button',{name:'和弦进行',exact:true}).click()
+  await page.getByLabel('进行加花',{exact:true}).selectOption('chord-turn')
+  const main=page.locator('main')
+  await main.evaluate(el=>{el.scrollTop=el.scrollHeight})
+  // Hidden, absolutely positioned form labels must remain inside the workspace.
+  // Otherwise they can extend the document past the clipped application shell.
+  await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight))
+  expect(await page.evaluate(()=>document.documentElement.scrollHeight)).toBe(1024)
+  expect(await page.evaluate(()=>scrollY)).toBe(0)
+  expect(await main.evaluate(el=>el.scrollTop)).toBeGreaterThan(0)
+  const help=await page.locator('#help').boundingBox()
+  expect(help!.y+help!.height).toBeLessThanOrEqual(1024)
+  expect(1024-help!.y-help!.height).toBeLessThanOrEqual(32)
+  await expect(page.getByLabel('练习名称',{exact:true})).toBeVisible()
+  await expect(page.getByRole('button',{name:'保存到我的练习',exact:true})).toBeVisible()
+})

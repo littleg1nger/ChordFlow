@@ -39,16 +39,20 @@ h1 { font-size: 18px; font-weight: 600; letter-spacing: .3px; }
 .local-badge { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; }
 .local-badge i { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
 main { width: 100%; max-width: 1700px; margin: 0 auto; padding: 18px 24px; overflow-y: auto; min-height: 0; flex: 1; scrollbar-gutter: stable; }
-.workspace-panel { min-width: 0; }
+/* Keep absolute screen-reader fields inside the workspace scroll container. */
+.workspace-panel { position: relative; min-width: 0; }
 .field { display: flex; flex-direction: column; gap: 4px; }
 .field label,.chord-search>label { font-size: 12px; color: var(--muted); }
 .explorer-tools { display: flex; gap: 12px; align-items: end; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
 .root-field { width: 88px; flex-shrink: 0; }
 .quality-field { width: 246px; }
-.chord-search { margin-left: auto; width: 280px; display: flex; flex-direction: column; gap: 4px; }
-.chord-search>div { display: flex; }
-.chord-search input { width: 100%; border-radius: 5px 0 0 5px; border-right: 0; font-size: 13px; }
-.chord-search button { border-color: #c9d1c9; border-radius: 0 5px 5px 0; }
+.chord-search { width: 280px; display: flex; flex-direction: column; gap: 4px; }
+.chord-search>div { display: flex; align-items: center; min-height: 38px; border: 1px solid #c9d1c9; border-radius: 5px; background: white; }
+.chord-search>div:focus-within { border-color: var(--green); box-shadow: 0 0 0 2px #28584624; }
+.chord-search input { flex: 1; width: 0; min-height: 36px; border: 0; border-radius: 4px 0 0 4px; font-size: 13px; background: transparent; }
+.chord-search input:focus-visible { outline: none; }
+.chord-search button { flex: 0 0 36px; min-height: 28px; margin-right: 3px; padding: 4px 6px; border: 0; border-left: 1px solid var(--line); border-radius: 0 3px 3px 0; background: transparent; color: var(--green); }
+.chord-search button:focus-visible { outline-offset: -2px; }
 .chord-overview { display: flex; align-items: center; gap: 30px; padding: 12px 0; }
 .chord-identity { min-width: 210px; }
 .symbol-line { display: inline-flex; align-items: center; gap: 8px; }

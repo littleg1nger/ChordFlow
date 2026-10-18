@@ -36,3 +36,13 @@ python C:/Users/asus/.codex/skills/.system/skill-installer/scripts/install-skill
 - `npm run test:e2e`：桌面及触控手机 Edge，总计 32 项。
 
 生产静态资源由 Vite 输出至 dist，既有部署文件保留。未执行远程部署。本次只验证本机 Edge；没有声称验证真实手机硬件或其他浏览器。
+
+## 后续修正：底部留白与搜索框
+
+根据用户截图，在 2048×1024 的实际 Edge 页面复现了双重滚动：应用高 1024px，外层文档却被撑至 1984px。原因是保存练习的读屏标签使用绝对定位，缺少就近定位上下文，越出了内部滚动区。为 `.workspace-panel` 添加 `position: relative`，隐藏表单元素留在内部，外层文档恢复为 1024px；进行内容仍正常滚动，说明区后保留约 24px 正常间距。
+
+搜索移到根音和类型旁边；输入框和提交按钮共享外边框及 `focus-within` 状态，替换仅围住输入框的截断粗轮廓，保留按钮自身的键盘焦点。搜索与提交行为不变。
+
+新增回归覆盖文档高度、外层无法额外滚动、进行底部位置及保存入口。重新检查桌面与手机截图、搜索提交和完整项目检查。
+
+验证结果：`npx playwright test tests/layout.spec.ts tests/chords.spec.ts` 10 项通过；`npm run check` 的类型检查、ESLint、61 个核心测试和生产构建全部通过。另用实际 Edge 验证输入后 Enter 搜索、Tab 到提交按钮后 Enter 搜索。修正截图为 `docs/screenshots/progression-bottom-2048.png` 与 `docs/screenshots/search-focus.png`，三种尺寸的探索页截图也已更新。
