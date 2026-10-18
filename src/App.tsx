@@ -51,7 +51,7 @@ export default function App() {
 
   function stop() { generation.current++;transport.stop();audio.stopAll() }
   function settings(next: Partial<Settings>, reset = true) { if(reset) stop();update(d => ({...d,settings:{...d.settings,...next}})) }
-  function navigate(next: string) { stop();setPage(next);setNotice('') }
+  function navigate(next: string) { stop();setPage(next);setNotice('');document.getElementById('workspace')?.scrollTo({top:0}) }
   function choose(c: Chord,inv = 0) { settings({chord:c.symbol,inversion:inv}) }
   async function preview(mode: AuditionMode) {
     stop()
@@ -91,7 +91,7 @@ export default function App() {
     const exercise: Exercise = {id:crypto.randomUUID(),name,config:practiceConfig(s),createdAt:new Date().toISOString()}
     update(d => ({...d,exercises:[...d.exercises,exercise]}));setNotice(`已保存“${name}”，可在“我的练习”中打开。`)
   }
-  function openExercise(e: Exercise) {settings(e.config);setPage('progressions');setNotice(`已打开“${e.name}”，点击播放开始。`)}
+  function openExercise(e: Exercise) {settings(e.config);setPage('progressions');document.getElementById('workspace')?.scrollTo({top:0});setNotice(`已打开“${e.name}”，点击播放开始。`)}
   function favorite() {
     if(!data.favorites.includes(current.symbol) && data.favorites.length>=200){setNotice('收藏已达 200 个，请先整理收藏。');return}
     update(d => ({...d,favorites:d.favorites.includes(current.symbol)?d.favorites.filter(c => c!==current.symbol):[...d.favorites,current.symbol]}))

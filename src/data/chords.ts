@@ -1,4 +1,4 @@
-export const CHORD_TYPES = [
+const definitions = [
   { id: 'major', suffix: '', name: '大三和弦', degrees: ['1', '3', '5'], semitones: [0, 4, 7], feeling: '明亮、稳定，像一句话的落点。', use: '大调主和弦；先听根音与三度的距离。' },
   { id: 'minor', suffix: 'm', name: '小三和弦', degrees: ['1', 'b3', '5'], semitones: [0, 3, 7], feeling: '柔和、内敛，带一点沉静。', use: '小调主和弦，也常作大调中的 vi、ii、iii 级。' },
   { id: 'dim', suffix: 'dim', name: '减三和弦', degrees: ['1', 'b3', 'b5'], semitones: [0, 3, 6], feeling: '紧张、悬而未决。', use: '常作为连接和弦，聆听减五度的不稳定感。' },
@@ -14,6 +14,8 @@ export const CHORD_TYPES = [
   { id: 'dimSeven', suffix: 'dim7', name: '减七和弦', degrees: ['1', 'b3', 'b5', 'bb7'], semitones: [0, 3, 6, 9], feeling: '密集、紧张，适合过渡。', use: '理论七音是减七度，例如 C 的 Bbb，不能写成 A 来替代理论解释。' },
   { id: 'addNine', suffix: 'add9', name: '加九和弦', degrees: ['1', '3', '5', '9'], semitones: [0, 4, 7, 14], feeling: '明亮、轻盈。', use: '大三和弦加九音，不自动加入七音。' },
 ] as const
+
+export const CHORD_TYPES=definitions.map(definition => ({...definition,source:'原创教学示例' as const}))
 
 export type ChordType = typeof CHORD_TYPES[number]['id']
 export const CONTENT_SOURCE = '原创教学示例'

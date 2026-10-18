@@ -157,8 +157,55 @@ details p { margin: 8px 0; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 .skip-link { position: fixed; top: -80px; left: 20px; padding: 10px; background: white; z-index: 99; color: var(--green); }
 .skip-link:focus { top: 10px; }
+.skip-link:not(:focus) { clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; padding: 0; }
 @media (min-width: 1600px) { .workspace-grid { grid-template-columns: minmax(0,1fr) 280px; gap: 35px; }.study-aside { padding: 26px; } }
 @media (max-width: 1200px) { .workspace-grid { grid-template-columns: minmax(0,1fr); }.study-aside { display: none; }.sidebar { width: 190px; flex-basis: 190px; } main { padding: 25px; }.topbar { padding: 0 25px; } }
 @media (max-width: 780px) { .app-shell { display: block; }.sidebar { width: 100%; height: auto; position: static; padding: 15px 18px 0; border-right: 0; border-bottom: 1px solid var(--line); }.brand { margin: 0 0 16px; }.brand-mark { height: 34px; width: 34px; border-radius: 9px; }.brand strong { font-size: 20px; }.brand small { font-size: 9px; margin-top: 2px; }.sidebar-bottom,.nav-caption { display: none; }nav { flex-direction: row; gap: 4px; }nav button { flex: 1; justify-content: center; gap: 7px; padding: 12px 4px; font-size: 12px; border-radius: 7px 7px 0 0; }nav button span { display: none; }nav svg { width: 17px; }.topbar { height: 44px; padding: 0 20px; }.local-badge { font-size: 9px; }main { padding: 24px 18px; }.page-heading { margin-bottom: 20px; }h1 { font-size: 26px; }.chapter-stamp { display: none; }.workspace-panel { padding: 20px; }.transport { padding: 13px 18px; }.source-status { min-width: 0; }.source-status small { max-width: 115px; }.transport-center { gap: 7px; }.volume-control input { width: 55px; }.field.inline { gap: 4px; } }
 @media (max-width: 520px) { main { padding: 22px 12px 15px; }.workspace-panel { padding: 17px 14px; border-radius: 11px; }.explorer-tools { flex-wrap: wrap; gap: 10px; padding-bottom: 18px; }.root-field { width: 75px; }.quality-field { max-width: none; }.chord-search { width: 100%; max-width: none; }.chord-overview { gap: 14px; align-items: start; padding: 22px 0; flex-wrap: wrap; }.chord-identity { width: 100%; }.symbol-line { display: inline-flex; }.chord-identity h2 { font-size: 62px; }.chord-identity p { display: inline; margin-left: 15px; }.tone-formula { width: 100%; }.tone { flex: 1; min-width: 0; }.bass-description { font-size: 10px; }.hand-voicing { gap: 25px; }.hand-voicing strong { font-size: 11px; }.keyboard-heading { gap: 10px; }.keyboard-controls { width: 100%; justify-content: space-between; }.keyboard-legend>span:last-child { margin-left: 0; width: 100%; }.transport { flex-wrap: wrap; gap: 9px; padding: 10px 15px; position: static; }.source-status { width: calc(100% - 120px); }.source-status small { max-width: none; }.transport-center { order: 3; width: 100%; justify-content: center; }.volume-control { margin-left: auto; }.learning-note { padding: 11px; gap: 10px; }.segmented button { padding: 7px 10px; }.page-heading { padding: 0 5px; }.topbar { font-size: 10px; } }
 @media (prefers-reduced-motion: reduce) { *,*::before,*::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+
+/* The player owns its layout space; only the workspace scrolls. */
+.app-shell { height: 100dvh; min-height: 0; overflow: hidden; }
+.main-shell { height: 100dvh; display: flex; flex-direction: column; min-height: 0; }
+.topbar { flex-shrink: 0; }
+main { flex: 1; min-height: 0; width: 100%; overflow-y: auto; overscroll-behavior-y: contain; scrollbar-gutter: stable; }
+.transport { flex-shrink: 0; }
+.sidebar-bottom p { font-size: 17px; letter-spacing: 0; }
+.field label,.eyebrow { font-size: 11px; }
+.chord-identity p,.hand-voicing strong { font-size: 12px; }
+.learning-note p,.teaching-details,.study-aside p { font-size: 12px; }
+.audition-actions button { font-size: 12px; }
+.keyboard-legend { font-size: 10px; }
+.small-print { font-size: 11px; }
+.pattern-options strong { font-size: 12px; }
+.pattern-options span { font-size: 10px; }
+.event-step { min-height: 96px; }
+.event-step>span:not(:first-child) { font-size: 12px; }
+@media (max-width: 780px) {
+  .app-shell { display: flex; flex-direction: column; }
+  .sidebar { flex: 0 0 auto; }
+  .main-shell { flex: 1; height: auto; }
+  main { margin: 0; }
+  .transport { gap: 7px; padding-top: 9px; padding-bottom: max(9px,env(safe-area-inset-bottom)); }
+  .transport-center { gap: 8px; }
+  .source-status small { font-size: 10px; }
+}
+@media (max-width: 520px) {
+  .sidebar { padding-top: 11px; }.brand { margin-bottom: 9px; }
+  .source-status strong { font-size: 11px; }
+  .source-status small { max-width: 230px; font-size: 9px; }
+  .source-status { width: calc(100% - 115px); }
+  .transport-center { gap: 6px; }
+  .transport-center .field.inline label { display: none; }
+  .transport-center .field.inline select { min-height: 37px; }
+  .bpm-control input { width: 55px; min-height: 37px; }
+  .bpm-control span { font-size: 8px; }
+  .toggle { min-height: 37px; padding: 7px 8px; }
+  .loop-control>span { display: none; }
+  .loop-control select { min-height: 37px; max-width: 66px; }
+  .transport-center .round-play { height: 38px; width: 38px; }
+  nav button { min-height: 44px; }
+  .icon-button { min-width: 34px; min-height: 34px; }
+  .pattern-tip { font-size: 12px; }
+}
+@media (max-width: 360px) { nav button { font-size: 11px; white-space: nowrap; }nav svg { display: none; } }
