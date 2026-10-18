@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {createHash} from 'node:crypto'
 
 const origin = process.argv[2] || 'http://127.0.0.1:4173'
 const production = process.argv.includes('--production')
@@ -20,6 +21,21 @@ for(const path of assets) {
 const deep=await request('/practice/saved')
 assert.equal(deep.status,200,'SPA fallback')
 assert.match(await deep.text(),/<title>和序 · Chordflow<\/title>/)
+const manifestResponse=await request('/audio/salamander/manifest.json')
+assert.equal(manifestResponse.status,200,'local piano manifest')
+const manifest=await manifestResponse.json()
+assert.equal(manifest.samples.length,30,'piano sample count')
+for(let i=0;i<manifest.samples.length;i+=5)await Promise.all(manifest.samples.slice(i,i+5).map(async sample=>{
+  assert.match(sample.file,/^(?:A|C|Ds|Fs)[0-8]\.mp3$/)
+  const response=await request(`/audio/salamander/${sample.file}`)
+  assert.equal(response.status,200,sample.file)
+  assert.match(response.headers.get('content-type') || '',/audio\/(?:mpeg|mp3)/)
+  const sha256=createHash('sha256').update(new Uint8Array(await response.arrayBuffer())).digest('hex')
+  assert.equal(sha256,sample.sha256,`sample hash ${sample.file}`)
+}))
+const license=await request('/audio/salamander/LICENSE.txt')
+assert.equal(license.status,200,'sample attribution')
+assert.match(await license.text(),/Alexander Holm/)
 if(production) {
   assert.match(home.headers.get('cache-control') || '',/no-cache/)
   assert.equal(home.headers.get('x-content-type-options'),'nosniff')
@@ -28,4 +44,4 @@ if(production) {
   assert.equal((await request('/assets/missing.js')).status,404,'missing JS must not receive HTML')
   assert.equal((await request('/audio/missing.wav')).status,404,'missing sample must not receive HTML')
 }
-process.stdout.write(`HTTP smoke passed: ${origin}, ${assets.length} built assets, SPA fallback${production?', production headers and health check':''}\n`)
+process.stdout.write(`HTTP smoke passed: ${origin}, ${assets.length} built assets, 30 local MP3 samples (MIME + SHA-256), attribution, SPA fallback${production?', production headers and health check':''}\n`)

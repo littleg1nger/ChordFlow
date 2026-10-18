@@ -4,16 +4,17 @@ import { parseChord, pitch } from '../music/theory'
 import { progressionChords } from '../music/progressions'
 import { compatible } from '../music/patterns'
 import type { PlaybackOptions } from '../audio/transport'
+import {FILLS,type FillId} from '../data/fills'
 
 export const STORAGE_KEY = 'chordflow:v1'
 export const MAX_BACKUP_BYTES = 1_048_576
-export type PracticeConfig = PlaybackOptions & { progression: ProgressionId; tonic: string; pattern: PatternId; register: number; voicing: 'root' | 'smooth'; barsPerChord: number }
+export type PracticeConfig = PlaybackOptions & { progression: ProgressionId; tonic: string; pattern: PatternId; register: number; voicing: 'root' | 'smooth'; barsPerChord: number;fill:FillId }
 export type Settings = PracticeConfig & { chord: string; inversion: number; octave: number; autoRange:boolean; labels: 'notes' | 'degrees'; volume: number }
 export type Exercise = { id: string; name: string; config: PracticeConfig; createdAt: string }
 export type UserData = { format: 'chordflow-backup'; version: 1; settings: Settings; favorites: string[]; exercises: Exercise[]; stats: { seconds: number; completions: number } }
 
 export function defaultData(): UserData {
-  return { format: 'chordflow-backup', version: 1, settings: { chord: 'C', inversion: 0, octave: 2, autoRange:true, labels: 'notes', volume: 55, bpm: 72, hands: 'both', loops: 0, metronome: false, countIn: false, pattern: 'arp', register: 0, progression: 'pop', tonic: 'C', voicing: 'smooth', barsPerChord: 1 }, favorites: [], exercises: [], stats: { seconds: 0, completions: 0 } }
+  return { format: 'chordflow-backup', version: 1, settings: { chord: 'C', inversion: 0, octave: 2, autoRange:true, labels: 'notes', volume: 55, bpm: 72, hands: 'both', loops: 0, metronome: false, countIn: false, pattern: 'arp', register: 0, progression: 'pop', tonic: 'C', voicing: 'smooth', barsPerChord: 1,fill:'none' }, favorites: [], exercises: [], stats: { seconds: 0, completions: 0 } }
 }
 function object(value: unknown, label: string): Record<string,unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(`${label}应为对象。`)
@@ -40,6 +41,7 @@ export function validateConfig(value: unknown): PracticeConfig {
   return {
     progression, tonic,
     pattern: choice(v.pattern,PATTERNS.map(p => p.id),'伴奏音型'),
+    fill:v.fill===undefined?'none':choice(v.fill,FILLS.map(f=>f.id),'加花类型'),
     bpm: number(v.bpm,40,160,'速度'),
     hands: choice(v.hands,['both','left','right'],'手别'),
     loops: choice(v.loops,[0,1,2,4,8],'循环次数'),
@@ -66,6 +68,7 @@ export function validateData(value: unknown): UserData {
     if (!/^\d{4}-\d{2}-\d{2}T/.test(createdAt) || !Number.isFinite(Date.parse(createdAt))) throw new Error('创建时间无效。')
     const config=validateConfig(e.config)
     if(!progressionChords(config.progression,config.tonic).every(c => compatible(config.pattern,c))) throw new Error('个人练习中的音型与和弦不兼容。')
+    if(config.fill!=='none'&&PATTERNS.find(p=>p.id===config.pattern)!.beats!==4)throw new Error('当前加花仅支持 4/4 拍。')
     return { id: text(e.id,'练习 ID',80), name: text(e.name,'练习名称',60), config, createdAt }
   })
   if (new Set(exercises.map(e => e.id)).size !== exercises.length) throw new Error('练习 ID 重复。')

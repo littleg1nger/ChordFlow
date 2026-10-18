@@ -1,14 +1,16 @@
 import { PROGRESSIONS, type ProgressionId } from '../data/progressions'
 import type { PatternId } from '../data/patterns'
-import { chord, interval, pitch, voicing, type Chord, type Note } from './theory'
+import { chord, voicing, type Chord, type Note } from './theory'
 import { compatible, patternTimeline, PPQ, type MusicEvent, type Timeline } from './patterns'
+import {scalePitches,type KeyContext} from './scale'
+import {fillTimeline} from './fills'
+import type {FillId} from '../data/fills'
 
 export function progressionChords(id: ProgressionId, tonic: string): Chord[] {
   const spec = PROGRESSIONS.find(p => p.id === id)
   if (!spec) throw new Error('未知的和弦进行。')
-  const root = pitch(tonic)
-  const scale = spec.mode === 'major' ? [0,2,4,5,7,9,11] : [0,2,3,5,7,8,10]
-  return spec.degrees.map((degree,i) => chord(interval(root,degree,scale[degree-1]).name,spec.types[i]))
+  const scale=scalePitches({tonic,mode:spec.mode})
+  return spec.degrees.map((degree,i) => chord(scale[degree-1].name,spec.types[i]))
 }
 export function movement(a: Note[], b: Note[]) {
   if (a.length === b.length) return a.reduce((sum,n,i) => sum+Math.abs(n.midi-b[i].midi),0)
@@ -31,17 +33,20 @@ export function progressionVoicings(chords: Chord[], style: 'root' | 'smooth', r
   })
   return result
 }
-export function progressionTimeline(chords: Chord[], pattern: PatternId, style: 'root' | 'smooth', register = 0, barsPerChord = 1): Timeline {
-  if (!chords.every(c => compatible(pattern,c))) throw new Error('该进行含四音和弦，此音型只支持三音配置。')
+export function progressionTimeline(chords: Chord[], pattern: PatternId, style: 'root' | 'smooth', register = 0, barsPerChord = 1,decoration?:KeyContext&{fill:FillId}): Timeline {
+  if (!chords.every(c => compatible(pattern,c))) throw new Error('该进行的三音 / 四音配置与此音型不兼容。')
   const voices = progressionVoicings(chords,style,register)
+  const parts=chords.map((c,index)=>patternTimeline(c,pattern,voices[index],register))
   const events: MusicEvent[] = []
   let beats = 4
-  chords.forEach((c,index) => {
-    const part = patternTimeline(c,pattern,voices[index],register)
+  chords.forEach((_,index) => {
+    const part = parts[index]
     beats = part.beats
     for (let bar = 0; bar < barsPerChord; bar++) {
       const absoluteBar = index * barsPerChord + bar
-      part.events.forEach(e => events.push({...e,tick:e.tick+absoluteBar*part.ticks,bar:absoluteBar,chordIndex:index}))
+      const next=(index+1)%chords.length
+      const decorated=decoration&&bar===barsPerChord-1?fillTimeline(part,{...decoration,id:decoration.fill,right:voices[index],nextRight:voices[next],nextBass:parts[next].events.find(e=>e.hand==='L')!.notes[0]}):part
+      decorated.events.forEach(e => events.push({...e,tick:e.tick+absoluteBar*part.ticks,bar:absoluteBar,chordIndex:index}))
     }
   })
   return { events, beats, bars: chords.length*barsPerChord, ticks: chords.length*barsPerChord*beats*PPQ, chords }

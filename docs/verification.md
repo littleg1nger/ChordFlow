@@ -2,6 +2,8 @@
 
 环境：Windows，Node 24.15.0，npm 11.12.1。Git 沿用既有用户配置；未创建远程。
 
+第二轮功能与验证见 [iteration-02.md](iteration-02.md)。当前使用本地钢琴采样、自动键盘范围、11 类音型、7 组进行和 3 类加花；下面 A–F 章节是首轮 MVP 的历史记录。
+
 ## 阶段 A
 
 `npm run check` 通过：TypeScript、ESLint、22 项乐理测试、Vite 生产构建。依赖已核对官方文档及 npm engines / peerDependencies，使用精确版本及 package-lock。TypeScript 选择 5.9.3 以符合 typescript-eslint 的支持范围。

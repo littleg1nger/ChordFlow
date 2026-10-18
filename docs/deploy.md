@@ -49,7 +49,7 @@ docker compose run --rm --no-deps chordflow -t
 npm run test:smoke -- http://127.0.0.1:8080 --production
 ```
 
-此脚本检查首页、构建 JS/CSS MIME、`/practice/saved` 的 SPA 回退、缓存头、CSP、健康检查和缺失静态资源的 404。深层 URL 目前加载同一个应用入口，页面导航仍是应用内状态，不承诺恢复某个 URL 对应标签页。
+此脚本检查首页、构建 JS/CSS MIME、30 个本地 MP3 的 MIME / SHA-256、采样署名、`/practice/saved` 的 SPA 回退、缓存头、CSP、健康检查和缺失静态资源的 404。深层 URL 目前加载同一个应用入口，页面导航仍是应用内状态，不承诺恢复某个 URL 对应标签页。
 
 构建后也可先在本地预览执行普通烟雾测试：
 
@@ -83,7 +83,7 @@ E2E_BASE_URL=http://127.0.0.1:8080 npm run test:e2e
 - `index.html` 和 SPA 回退使用 `Cache-Control: no-cache`，允许浏览器每次重新验证。
 - Vite `/assets/` 内容哈希资源在 200 / 304 时缓存一年并标为 immutable；错误响应不会被长缓存。
 - `/assets/` 或 `/audio/` 缺失文件返回 404，不错误回退 HTML。
-- 标准 `mime.types` 提供 JavaScript、CSS、SVG、WAV、MP3 等 MIME。当前无外部采样，所有声音本地合成。
+- 标准 `mime.types` 提供 JavaScript、CSS、SVG、WAV、MP3 等 MIME。Salamander 钢琴采样约 1.92 MiB，作为构建中的 `/audio/salamander/` 资源随容器分发；不依赖外部 CDN。署名、许可与 manifest 不得删去。
 - CSP 仅允许同源脚本与资源；动态琴键位置 / 播放头需要内联 style，因此 `style-src` 保留 `unsafe-inline`；脚本不允许内联。
 
 ## HTTPS 与域名

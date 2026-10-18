@@ -39,6 +39,19 @@ describe('有版本的本地数据边界', () => {
     expect(next.settings.autoRange).toBe(true)
     expect(next.settings.octave).toBe(3)
   })
+  it('旧设置与练习补入无加花，新加花与新进行可往返',()=>{
+    const old=JSON.parse(JSON.stringify(defaultData()))
+    old.exercises=[{id:'old',name:'原来的练习',config:{...old.settings},createdAt:new Date().toISOString()}]
+    delete old.settings.fill
+    delete old.exercises[0].config.fill
+    const restored=validateData(old)
+    expect(restored.settings.fill).toBe('none')
+    expect(restored.exercises[0].config.fill).toBe('none')
+    restored.settings.progression='canon';restored.settings.pattern='ascending';restored.settings.fill='chord-turn'
+    expect(parseBackup(JSON.stringify(restored)).settings.fill).toBe('chord-turn')
+    restored.exercises[0].config.fill='bass-walk';restored.exercises[0].config.pattern='waltz'
+    expect(()=>validateData(restored)).toThrow('4/4')
+  })
   it('损坏或不可用的存储可恢复到内存默认值，不悄悄写回', () => {
     expect(loadData({getItem:() => '{'}).warning).toContain('默认设置')
     expect(loadData({getItem:() => { throw new Error('denied') }}).data.settings.chord).toBe('C')

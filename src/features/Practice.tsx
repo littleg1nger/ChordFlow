@@ -3,6 +3,7 @@ import { PATTERNS } from '../data/patterns'
 import { PROGRESSIONS } from '../data/progressions'
 import { progressionChords } from '../music/progressions'
 import { MAX_BACKUP_BYTES, parseBackup, type Exercise, type UserData } from '../storage/store'
+import {FILLS} from '../data/fills'
 
 type Props = { data: UserData; onOpen: (exercise: Exercise) => void; onCopy: (exercise: Exercise) => void; onDelete: (id: string) => void; onFavorite: (symbol: string) => void; onRemoveFavorite: (symbol: string) => void; onImport: (d: UserData) => void; onCreate: () => void }
 export function Practice({data,onOpen,onCopy,onDelete,onFavorite,onRemoveFavorite,onImport,onCreate}: Props) {
@@ -33,7 +34,7 @@ export function Practice({data,onOpen,onCopy,onDelete,onFavorite,onRemoveFavorit
     <div className="section-label"><h3>保存的练习 <span className="count-label">{data.exercises.length}</span></h3><button className="quiet" onClick={onCreate}>＋ 创建练习</button></div>
     {!data.exercises.length ? <div className="empty-state"><h3>给下一次练琴留一个起点。</h3><p>在“和弦进行”选择进行、音型与速度，再保存到这里。</p><button onClick={onCreate}>去创建练习 →</button></div> : <div className="saved-exercises">{data.exercises.map(e => {
       const spec=PROGRESSIONS.find(p => p.id===e.config.progression)!
-      return <article className="saved-exercise" key={e.id}><div><h3>{e.name}</h3><p>{progressionChords(e.config.progression,e.config.tonic).map(c => c.symbol).join(' – ')}</p><small>{spec.mode==='major'?'大调':'自然小调'} · {PATTERNS.find(p => p.id===e.config.pattern)!.name} · {e.config.bpm} BPM · {e.config.hands==='both'?'双手':e.config.hands==='left'?'仅左手':'仅右手'}</small></div><div className="exercise-actions"><button className="primary" onClick={() => onOpen(e)} aria-label={`打开练习 ${e.name}`}>开始练习</button><button onClick={() => onCopy(e)} aria-label={`复制练习 ${e.name}`}>复制</button><button className="quiet" onClick={() => onDelete(e.id)} aria-label={`删除练习 ${e.name}`}>删除</button></div></article>
+      return <article className="saved-exercise" key={e.id}><div><h3>{e.name}</h3><p>{progressionChords(e.config.progression,e.config.tonic).map(c => c.symbol).join(' – ')}</p><small>{spec.mode==='major'?'大调':'自然小调'} · {PATTERNS.find(p => p.id===e.config.pattern)!.name} · {FILLS.find(f=>f.id===e.config.fill)!.name} · {e.config.bpm} BPM · {e.config.hands==='both'?'双手':e.config.hands==='left'?'仅左手':'仅右手'}</small></div><div className="exercise-actions"><button className="primary" onClick={() => onOpen(e)} aria-label={`打开练习 ${e.name}`}>开始练习</button><button onClick={() => onCopy(e)} aria-label={`复制练习 ${e.name}`}>复制</button><button className="quiet" onClick={() => onDelete(e.id)} aria-label={`删除练习 ${e.name}`}>删除</button></div></article>
     })}</div>}
     <div className="section-label"><h3>收藏的和弦</h3><span>{data.favorites.length} 个</span></div>
     {!data.favorites.length ? <p className="small-print">在和弦探索中点按星标，把常练的和弦收在这里。</p> : <div className="favorite-list">{data.favorites.map(s => <div key={s}><button onClick={() => onFavorite(s)}>{s}</button><button className="quiet" aria-label={`移除收藏 ${s}`} onClick={() => onRemoveFavorite(s)}>×</button></div>)}</div>}

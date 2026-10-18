@@ -9,6 +9,7 @@ import { Patterns } from './features/Patterns'
 import { Progressions } from './features/Progressions'
 import { Practice } from './features/Practice'
 import { PATTERNS } from './data/patterns'
+import {PROGRESSIONS} from './data/progressions'
 import { leftBass, parseChord, voicing,midiName, type Chord } from './music/theory'
 import {demoRange,manualRange} from './music/keyboard-range'
 import { compatible, patternTimeline, PPQ } from './music/patterns'
@@ -43,12 +44,17 @@ export default function App() {
   const current = inProgression ? chords[chordIndex] : single
   const right = inProgression ? voices[chordIndex] : singleRight
   const timeline = useMemo(() => {
-    if (page==='progressions') return chords.every(c => compatible(s.pattern,c)) ? progressionTimeline(chords,s.pattern,s.voicing,s.register,s.barsPerChord) : undefined
+    if (page==='progressions') return chords.every(c => compatible(s.pattern,c))&&!(s.fill!=='none'&&spec.beats!==4) ? progressionTimeline(chords,s.pattern,s.voicing,s.register,s.barsPerChord,{fill:s.fill,tonic:s.tonic,mode:PROGRESSIONS.find(p=>p.id===s.progression)!.mode}) : undefined
     return compatible(s.pattern,single) ? patternTimeline(single,s.pattern,singleRight,s.register) : undefined
-  },[page,chords,s.pattern,s.voicing,s.register,s.barsPerChord,single,singleRight])
+  },[page,chords,s.pattern,s.voicing,s.register,s.barsPerChord,single,singleRight,s.fill,s.tonic,s.progression,spec.beats])
   const bass = (page!=='explore' ? timeline?.events.find(e => e.hand==='L' && e.chordIndex===(inProgression?chordIndex:0))?.notes[0] : undefined) ?? leftBass(current,43+s.register*12)
-  const demoMidis=useMemo(()=>page!=='explore'&&timeline?timeline.events.flatMap(e=>e.notes.map(n=>n.midi)):[leftBass(single,43+s.register*12).midi,...singleRight.map(n=>n.midi)],[page,timeline,single,s.register,singleRight])
+  const demoMidis=useMemo(()=>{
+    if(page!=='explore'&&timeline)return timeline.events.flatMap(e=>e.notes.map(n=>n.midi))
+    if(inProgression)return chords.flatMap((c,i)=>[leftBass(c,43+s.register*12).midi,...voices[i].map(n=>n.midi)])
+    return [leftBass(single,43+s.register*12).midi,...singleRight.map(n=>n.midi)]
+  },[page,timeline,inProgression,chords,voices,single,s.register,singleRight])
   const keyboardRange=useMemo(()=>s.autoRange?demoRange(demoMidis):manualRange(s.octave),[s.autoRange,s.octave,demoMidis])
+  const keyboardEvents=useMemo(()=>page==='explore'?undefined:timeline?.events.filter(e=>e.chordIndex===(inProgression?chordIndex:0)),[page,timeline,inProgression,chordIndex])
   const options = useMemo(() => ({bpm:s.bpm,hands:s.hands,loops:s.loops,metronome:s.metronome,countIn:s.countIn}),[s.bpm,s.hands,s.loops,s.metronome,s.countIn])
   const config = practiceConfig(s)
   const pageInfo = PAGES.find(p => p.id===page)!
@@ -64,22 +70,23 @@ export default function App() {
       setAudioStatus('正在开启音频…')
       await audio.unlock()
       if(token!==generation.current) return
-      setAudioStatus(`音频已开启 · ${audio.sourceName}`)
+      setAudioStatus('音频已开启')
       let notes = s.hands==='left' ? [bass] : s.hands==='right' ? right : [bass,...right]
       notes=[...notes].sort((a,b) => mode==='down' ? b.midi-a.midi : a.midi-b.midi)
       notes.forEach((n,i) => audio.note(n.midi,audio.now+(mode==='block'?0:i*.3),1.1))
-    } catch(e) {setAudioStatus(`音频失败，可点击重试：${(e as Error).message}`)}
+    } catch(e) {if(token===generation.current)setAudioStatus(`音频失败，可点击重试：${(e as Error).message}`)}
   }
   async function playNote(midi: number) {
     const token=generation.current
-    try {await audio.unlock();if(token!==generation.current)return;audio.note(midi);setAudioStatus(`音频已开启 · ${audio.sourceName}`)}
-    catch {setAudioStatus('音频失败，请检查浏览器音频权限并重试。')}
+    try {await audio.unlock();if(token!==generation.current)return;audio.note(midi);setAudioStatus('音频已开启')}
+    catch {if(token===generation.current)setAudioStatus('音频失败，请检查浏览器音频权限并重试。')}
   }
   async function playPractice() {
     if(playback.status==='playing') {transport.pause();return}
     generation.current++;audio.stopAll()
-    try {await transport.play();setAudioStatus(`音频已开启 · ${audio.sourceName}`)}
-    catch(e) {setAudioStatus(`音频失败，可点击重试：${(e as Error).message}`)}
+    const token=generation.current
+    try {await transport.play();if(token===generation.current)setAudioStatus('音频已开启')}
+    catch(e) {if(token===generation.current)setAudioStatus(`音频失败，可点击重试：${(e as Error).message}`)}
   }
   async function step(tick: number) {
     if(!timeline || tick===undefined)return
@@ -88,13 +95,18 @@ export default function App() {
     try {
       await audio.unlock();if(token!==generation.current)return
       timeline.events.filter(e => e.tick===tick && (s.hands==='both' || (s.hands==='left'?e.hand==='L':e.hand==='R'))).forEach(e => e.notes.forEach(n => audio.note(n.midi,audio.now,.6,e.velocity)))
-      setAudioStatus(`音频已开启 · ${audio.sourceName}`)
-    } catch {setAudioStatus('音频失败，请点击播放重试。')}
+      setAudioStatus('音频已开启')
+    } catch {if(token===generation.current)setAudioStatus('音频失败，请点击播放重试。')}
   }
   function saveExercise(name: string) {
     if(data.exercises.length>=100){setNotice('个人练习已达 100 项，请先导出并删除部分练习。');return}
     const exercise: Exercise = {id:crypto.randomUUID(),name,config:practiceConfig(s),createdAt:new Date().toISOString()}
     update(d => ({...d,exercises:[...d.exercises,exercise]}));setNotice(`已保存“${name}”，可在“我的练习”中打开。`)
+  }
+  async function retrySamples() {
+    stop();const token=generation.current;setAudioStatus('正在重试加载…')
+    try{await audio.retrySamples();if(token===generation.current)setAudioStatus('音频已开启')}
+    catch{if(token===generation.current)setAudioStatus('音频失败，请检查权限后重试。')}
   }
   function openExercise(e: Exercise) {settings(e.config);setPage('progressions');document.getElementById('workspace')?.scrollTo({top:0});setNotice(`已打开“${e.name}”，点击播放开始。`)}
   function favorite() {
@@ -129,12 +141,12 @@ export default function App() {
       {page==='practice' ? <section className="workspace-panel"><Practice data={data} onOpen={openExercise} onCopy={e => {if(data.exercises.length>=100){setNotice('个人练习已达 100 项。');return}update(d => ({...d,exercises:[...d.exercises,{...e,id:crypto.randomUUID(),name:(e.name+'（副本）').slice(0,60),createdAt:new Date().toISOString()}]}))}} onDelete={id => update(d => ({...d,exercises:d.exercises.filter(e => e.id!==id)}))} onFavorite={symbol => {const c=parseChord(symbol);choose(c,c.bass?c.notes.findIndex(n => n.pc===c.bass?.pc):0);setPage('explore')}} onRemoveFavorite={symbol => update(d => ({...d,favorites:d.favorites.filter(c => c!==symbol)}))} onImport={next => {stop();update(() => next)}} onCreate={() => navigate('progressions')}/></section> : <div className="workspace-grid"><section className="workspace-panel" aria-label="和弦学习">
         {page==='explore' ? <Explorer current={current} right={right} bass={bass} inversion={s.inversion} onChoose={choose} onPreview={preview} onStop={stop} favorite={data.favorites.includes(current.symbol)} onFavorite={favorite}/> : <>
           {inProgression && <Progressions config={config} onConfig={next => settings(next)} chords={chords} voices={voices} index={chordIndex} onInspect={index => {if(timeline)void step(index*s.barsPerChord*spec.beats*PPQ)}} onSave={saveExercise} canSave={!!timeline && data.exercises.length<100}/>}
-          <Patterns current={current} onChoose={choose} pattern={s.pattern} onPattern={pattern => settings({pattern})} timeline={timeline} playback={playback} onStep={step} register={s.register} onRegister={register => settings({register})} progression={inProgression} hands={s.hands}/>
+          <Patterns current={current} onChoose={choose} pattern={s.pattern} onPattern={pattern => settings({pattern,...(PATTERNS.find(p=>p.id===pattern)!.beats!==4?{fill:'none' as const}:{})})} timeline={timeline} playback={playback} onStep={step} register={s.register} onRegister={register => settings({register})} progression={inProgression} hands={s.hands}/>
         </>}
         <div className="keyboard-heading"><h3>把声音放到琴键上</h3><div className="keyboard-controls"><label>音区<select aria-label="键盘起始音区" value={s.autoRange?'auto':String(s.octave)} onChange={e => settings(e.target.value==='auto'?{autoRange:true}:{autoRange:false,octave:Number(e.target.value)})}><option value="auto">自动适配</option><option value="2">C2–C5</option><option value="3">C3–C6</option><option value="4">C4–C7</option></select></label><label>标记<select aria-label="琴键标记" value={s.labels} onChange={e => settings({labels:e.target.value as Settings['labels']},false)}><option value="notes">音名</option><option value="degrees">相对度数</option></select></label></div></div>
         <p className="range-description">{s.autoRange?'自动适配':'手动音区'} · {midiName(keyboardRange.start)}–{midiName(keyboardRange.end)}{s.autoRange?(inProgression?' · 覆盖整组进行，播放时保持稳定':' · 覆盖当前演示的全部音符'):''}。此选项只调整显示，不改变演奏音高。</p>
-        <Piano chord={current} right={right} bass={bass} active={active} range={keyboardRange} labels={s.labels} onNote={playNote}/>
-        <div className="keyboard-legend"><span><i className="legend-root"/>根音</span><span><i className="legend-right"/>右手</span><span><i className="legend-left"/>左手低音</span><span>● 正在发声</span><span>点击琴键，或聚焦后按回车</span></div>
+        <Piano chord={current} right={right} bass={bass} active={active} range={keyboardRange} labels={s.labels} onNote={playNote} events={keyboardEvents} tick={playback.tick} focusMidis={s.autoRange?demoMidis:undefined}/>
+        <div className="keyboard-legend"><span><i className="legend-root"/>根音</span><span><i className="legend-right"/>右手</span><span><i className="legend-left"/>左手低音</span><span>● 正在发声</span>{inProgression&&s.fill!=='none'&&<span>花 · 加花按音</span>}<span>点击琴键，或聚焦后按回车</span></div>
         {demoMidis.some(n => n<keyboardRange.start || n>keyboardRange.end) && <p className="small-print">部分演示音在手动音区外。<button className="quiet" onClick={()=>settings({autoRange:true},false)}>恢复自动音区</button>演奏音区需在音型设置中调整。</p>}
       </section><aside className="study-aside"><span className="eyebrow">练琴小记</span><h2>先听清，<br/>再连起来。</h2><p>一次只改变一件事。先比较大三与小三，再听同一个和弦的不同转位。</p><div className="aside-rule"/><h3>一个小练习</h3><p>弹 C → Am → F → G。找到它们共有的音，试着让右手少移动一点。</p><div className="quick-chords">{['C','Am','F','G'].map(symbol => <button key={symbol} onClick={() => {choose(parseChord(symbol));setPage('explore')}}>{symbol}</button>)}</div><div className="aside-footnote">学习顺序<br/><strong>构成音 → 转位 → 伴奏 → 连接</strong></div></aside></div>}
       <details id="help" className="help-panel">
@@ -146,7 +158,7 @@ export default function App() {
         <p><a href="/third-party-notices.txt" target="_blank" rel="noreferrer">开源组件许可</a> · <a href="/audio/salamander/LICENSE.txt" target="_blank" rel="noreferrer">钢琴采样署名与许可</a></p>
       </details>
     </main>
-    {page!=='practice' && <PlaybackBar practice={page!=='explore'} snapshot={playback} options={options} onOptions={next => settings(next)} onPlay={() => page==='explore'?preview('block'):playPractice()} onStop={stop} volume={s.volume} onVolume={volume => settings({volume},false)} source={audio.sourceName} canRetry={sampleState.status==='fallback'} onRetry={async()=>{stop();setAudioStatus('正在重试加载…');try{await audio.retrySamples();setAudioStatus(`音频已开启 · ${audio.sourceName}`)}catch{setAudioStatus('音频失败，请检查权限后重试。')}}} status={sampleState.status==='loading'?`加载钢琴采样 ${sampleState.loaded}/${sampleState.total}`:sampleState.status==='fallback'?sampleState.message:audioStatus} disabled={sampleState.status==='loading'||(page!=='explore'&&!timeline)}/>}
+    {page!=='practice' && <PlaybackBar practice={page!=='explore'} snapshot={playback} options={options} onOptions={next => settings(next)} onPlay={() => page==='explore'?preview('block'):playPractice()} onStop={stop} volume={s.volume} onVolume={volume => settings({volume},false)} source={audio.sourceName} canRetry={sampleState.status==='fallback'} onRetry={retrySamples} status={sampleState.status==='loading'?`加载钢琴采样 ${sampleState.loaded}/${sampleState.total}`:sampleState.status==='fallback'?`${audioStatus} · ${sampleState.message}`:audioStatus} disabled={sampleState.status==='loading'||(page!=='explore'&&!timeline)}/>}
     </div>
   </div>
 }
