@@ -1,0 +1,22 @@
+Salamander Grand Piano v3 — Alexander Holm
+Piano: Yamaha C5. Original recordings: Alexander Holm.
+License: Creative Commons Attribution 3.0 Unported (CC BY 3.0)
+https://creativecommons.org/licenses/by/3.0/
+
+Original library:
+https://archive.org/details/SalamanderGrandPianoV3
+https://github.com/sfzinstruments/SalamanderGrandPiano
+https://freepats.zenvoid.org/Piano/acoustic-grand-piano.html
+
+MP3 subset distributed by the Tone.js audio project:
+https://tonejs.github.io/audio/salamander/
+The Tone.js sampler example documents this sample mapping:
+https://github.com/Tonejs/Tone.js/blob/dev/examples/sampler.html
+
+Chordflow redistributes 30 existing MP3 files, unchanged, as a single-layer
+piano instrument. See manifest.json for each original URL and SHA-256.
+Playback repitches the nearest sample by at most one semitone, scales gain
+for velocity and applies a short key-release envelope. It does not implement
+the original SFZ's 16 velocity layers, pedal noises or resonance layers.
+
+Credit does not imply endorsement by Alexander Holm or Tone.js.

@@ -120,6 +120,7 @@ details p { margin: 8px 0; }
 .source-status { display: flex; align-items: center; gap: 10px; min-width: 160px; }
 .source-status strong { font-size: 11px; display: block; font-weight: 500; }
 .source-status small { font-size: 9px; display: block; margin-top: 3px; color: var(--muted); }
+.retry-samples { font-size: 10px; padding: 5px 7px; white-space: nowrap; }
 .transport-center { display: flex; align-items: center; gap: 13px; }
 .round-play { width: 42px; height: 42px; border-radius: 50%; background: var(--green); border: 0; color: white; padding: 10px; }
 .round-play:hover:not(:disabled) { background: #1c4938; }

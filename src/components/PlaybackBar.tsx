@@ -1,12 +1,12 @@
 import { Icon } from './Icon'
 import { useEffect,useState } from 'react'
 import type { PlaybackOptions, PlaybackSnapshot } from '../audio/transport'
-type Props = { practice: boolean; snapshot: PlaybackSnapshot; options: PlaybackOptions; onOptions: (next: PlaybackOptions) => void; onPlay: () => void; onStop: () => void; volume: number; onVolume: (n: number) => void; status: string; disabled: boolean }
-export function PlaybackBar({ practice,snapshot,options,onOptions,onPlay,onStop,volume,onVolume,status,disabled }: Props) {
+type Props = { practice: boolean; snapshot: PlaybackSnapshot; options: PlaybackOptions; onOptions: (next: PlaybackOptions) => void; onPlay: () => void; onStop: () => void; volume: number; onVolume: (n: number) => void; status: string; disabled: boolean;source:string;canRetry:boolean;onRetry:()=>void }
+export function PlaybackBar({ practice,snapshot,options,onOptions,onPlay,onStop,volume,onVolume,status,disabled,source,canRetry,onRetry }: Props) {
   const playing = snapshot.status === 'playing'
   const [bpmDraft,setBpmDraft]=useState(String(options.bpm))
   useEffect(() => {setBpmDraft(String(options.bpm))},[options.bpm])
-  return <footer className="transport"><div className="source-status"><span className="status-dot" /><div><strong>合成键盘音</strong><small role="status">{status}</small></div></div>
+  return <footer className="transport"><div className="source-status"><span className="status-dot" /><div><strong>{source}</strong><small role="status">{status}</small></div>{canRetry&&<button className="retry-samples" onClick={onRetry}>重试采样</button>}</div>
     <div className="transport-center"><button className="round-play" disabled={disabled || snapshot.status === 'loading'} onClick={onPlay} aria-label={!practice ? '试听当前和弦' : playing ? '暂停练习' : snapshot.status === 'paused' ? '继续练习' : '播放练习'}><Icon name={playing && practice ? 'pause' : 'play'} size={18} /></button><button className="icon-button" onClick={onStop} aria-label="停止"><Icon name="stop" size={17} /></button>
     {practice && <label className="bpm-control"><input aria-label="速度 BPM" type="number" min="40" max="160" value={bpmDraft} onChange={e => {setBpmDraft(e.target.value);const n=Number(e.target.value);if(Number.isInteger(n)&&n>=40&&n<=160)onOptions({...options,bpm:n})}} onBlur={() => {const n=Number(bpmDraft);const bpm=bpmDraft&&Number.isFinite(n)?Math.max(40,Math.min(160,Math.round(n))):options.bpm;setBpmDraft(String(bpm));if(bpm!==options.bpm)onOptions({...options,bpm})}} onKeyDown={e => {if(e.key==='Enter')e.currentTarget.blur()}}/><span>BPM</span></label>}
     <div className="field inline"><label htmlFor="hands">手别</label><select id="hands" aria-label="播放手别" value={options.hands} onChange={e => onOptions({...options,hands:e.target.value as PlaybackOptions['hands']})}><option value="both">双手</option><option value="left">仅左手</option><option value="right">仅右手</option></select></div>

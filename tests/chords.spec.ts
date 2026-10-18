@@ -14,13 +14,13 @@ test('和弦查询、转位、音频解锁和局部键盘滚动', async ({ page 
       ;(window as unknown as { analyser: AnalyserNode }).analyser=analyser
       return node
     }
-    const original = AudioContext.prototype.createOscillator
+    const original = AudioContext.prototype.createBufferSource
     ;(window as unknown as { scheduled: number[] }).scheduled = []
-    AudioContext.prototype.createOscillator = function (...args) {
+    AudioContext.prototype.createBufferSource = function (...args) {
       const osc = original.apply(this, args)
       const start = osc.start.bind(osc)
       osc.start = (when?: number) => {
-        ;(window as unknown as { scheduled: number[] }).scheduled.push(osc.frequency.value)
+        ;(window as unknown as { scheduled: number[] }).scheduled.push(osc.playbackRate.value)
         start(when)
       }
       return osc
@@ -31,8 +31,9 @@ test('和弦查询、转位、音频解锁和局部键盘滚动', async ({ page 
   await page.getByRole('button', { name: '同时弹', exact: true }).click()
   await expect(page.getByRole('status')).toContainText('音频已开启')
   await expect.poll(() => page.evaluate(() => (window as unknown as { scheduled: number[] }).scheduled.length)).toBeGreaterThan(0)
-  const frequencies=await page.evaluate(() => (window as unknown as {scheduled:number[]}).scheduled)
-  for(const expected of [130.813,261.626,329.628,391.995])expect(frequencies.some(f => Math.abs(f-expected)<.03)).toBe(true)
+  const rates=await page.evaluate(() => (window as unknown as {scheduled:number[]}).scheduled)
+  expect(rates.slice(0,4)).toEqual([1,1,expect.closeTo(2**(1/12),5),expect.closeTo(2**(1/12),5)])
+  await expect(page.locator('.source-status')).toContainText('采样钢琴')
   await expect.poll(() => page.evaluate(() => {
     const analyser=(window as unknown as { analyser: AnalyserNode }).analyser
     const samples=new Float32Array(analyser.fftSize)

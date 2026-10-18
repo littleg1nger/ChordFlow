@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState,useSyncExternalStore } from 'react'
 import { audio } from './audio/engine'
 import { transport } from './audio/transport'
 import { Icon } from './components/Icon'
@@ -30,6 +30,7 @@ export default function App() {
   const [audioStatus,setAudioStatus] = useState('点击试听以开启声音')
   const [notice,setNotice] = useState('')
   const [playback,setPlayback] = useState(transport.snapshot)
+  const sampleState=useSyncExternalStore(audio.subscribe,audio.getSnapshot)
   const generation = useRef(0)
   const single = useMemo(() => parseChord(s.chord),[s.chord])
   const singleRight = useMemo(() => voicing(single,s.inversion,55+s.register*12),[single,s.inversion,s.register])
@@ -60,7 +61,7 @@ export default function App() {
       setAudioStatus('正在开启音频…')
       await audio.unlock()
       if(token!==generation.current) return
-      setAudioStatus('音频已开启 · 合成键盘音')
+      setAudioStatus(`音频已开启 · ${audio.sourceName}`)
       let notes = s.hands==='left' ? [bass] : s.hands==='right' ? right : [bass,...right]
       notes=[...notes].sort((a,b) => mode==='down' ? b.midi-a.midi : a.midi-b.midi)
       notes.forEach((n,i) => audio.note(n.midi,audio.now+(mode==='block'?0:i*.3),1.1))
@@ -68,13 +69,13 @@ export default function App() {
   }
   async function playNote(midi: number) {
     const token=generation.current
-    try {await audio.unlock();if(token!==generation.current)return;audio.note(midi);setAudioStatus('音频已开启 · 合成键盘音')}
+    try {await audio.unlock();if(token!==generation.current)return;audio.note(midi);setAudioStatus(`音频已开启 · ${audio.sourceName}`)}
     catch {setAudioStatus('音频失败，请检查浏览器音频权限并重试。')}
   }
   async function playPractice() {
     if(playback.status==='playing') {transport.pause();return}
     generation.current++;audio.stopAll()
-    try {await transport.play();setAudioStatus('音频已开启 · 合成键盘音')}
+    try {await transport.play();setAudioStatus(`音频已开启 · ${audio.sourceName}`)}
     catch(e) {setAudioStatus(`音频失败，可点击重试：${(e as Error).message}`)}
   }
   async function step(tick: number) {
@@ -84,7 +85,7 @@ export default function App() {
     try {
       await audio.unlock();if(token!==generation.current)return
       timeline.events.filter(e => e.tick===tick && (s.hands==='both' || (s.hands==='left'?e.hand==='L':e.hand==='R'))).forEach(e => e.notes.forEach(n => audio.note(n.midi,audio.now,.6,e.velocity)))
-      setAudioStatus('音频已开启 · 合成键盘音')
+      setAudioStatus(`音频已开启 · ${audio.sourceName}`)
     } catch {setAudioStatus('音频失败，请点击播放重试。')}
   }
   function saveExercise(name: string) {
@@ -132,9 +133,16 @@ export default function App() {
         <div className="keyboard-legend"><span><i className="legend-root"/>根音</span><span><i className="legend-right"/>右手</span><span><i className="legend-left"/>左手低音</span><span>● 正在发声</span><span>点击琴键，或聚焦后按回车</span></div>
         {[bass,...right].some(n => n.midi<(s.octave+1)*12 || n.midi>(s.octave+4)*12) && <p className="small-print">部分配置音在当前可见音区外；请调整上方键盘音区查看。演奏音区需在音型设置中调整。</p>}
       </section><aside className="study-aside"><span className="eyebrow">练琴小记</span><h2>先听清，<br/>再连起来。</h2><p>一次只改变一件事。先比较大三与小三，再听同一个和弦的不同转位。</p><div className="aside-rule"/><h3>一个小练习</h3><p>弹 C → Am → F → G。找到它们共有的音，试着让右手少移动一点。</p><div className="quick-chords">{['C','Am','F','G'].map(symbol => <button key={symbol} onClick={() => {choose(parseChord(symbol));setPage('explore')}}>{symbol}</button>)}</div><div className="aside-footnote">学习顺序<br/><strong>构成音 → 转位 → 伴奏 → 连接</strong></div></aside></div>}
-      <details id="help" className="help-panel"><summary>关于和序 · Chordflow 与本地数据</summary><p>从和弦开始，弹出自己的伴奏。From chords to accompaniment.</p><p>C4 = MIDI 60，A4 = 440 Hz。当前使用 Web Audio 合成键盘音，无采样加载。音频需点击解锁；静音时检查主音量与设备音量。琴键可通过 Tab 聚焦、Enter 或 Space 弹奏。</p><p>教学内容为原创教学示例。指法因手型和连接而异。没有 MIDI 或麦克风识别，不测量正确率。数据仅在当前浏览器保存，不自动跨设备同步；可在“我的练习”导入与导出 JSON 备份。</p><p>切换页面、和弦、音型、速度、手别与演奏音区会停止并回到开头；暂停保留当前位置。一次只有一个主动播放会话，点击琴键的短音可叠加。后台自动暂停，需要回到页面手动继续。持续循环中，每完成一整组进行或一小节单和弦音型计一轮。</p><p><a href="/third-party-notices.txt" target="_blank" rel="noreferrer">开源组件许可</a></p></details>
+      <details id="help" className="help-panel">
+        <summary>关于和序 · Chordflow 与本地数据</summary>
+        <p>从和弦开始，弹出自己的伴奏。From chords to accompaniment.</p>
+        <p>C4 = MIDI 60，A4 = 440 Hz。默认使用 Salamander 采样钢琴，首次点击加载本地音源；失败时明确降级为合成音，可重试。静音时检查主音量与设备音量。琴键可通过 Tab 聚焦、Enter 或 Space 弹奏。</p>
+        <p>教学内容为原创教学示例。指法因手型和连接而异。没有 MIDI 或麦克风识别，不测量正确率。数据仅在当前浏览器保存，不自动跨设备同步；可在“我的练习”导入与导出 JSON 备份。</p>
+        <p>切换页面、和弦、音型、速度、手别与演奏音区会停止并回到开头；暂停保留当前位置。一次只有一个主动播放会话，点击琴键的短音可叠加。后台自动暂停，需要回到页面手动继续。持续循环中，每完成一整组进行或一小节单和弦音型计一轮。</p>
+        <p><a href="/third-party-notices.txt" target="_blank" rel="noreferrer">开源组件许可</a> · <a href="/audio/salamander/LICENSE.txt" target="_blank" rel="noreferrer">钢琴采样署名与许可</a></p>
+      </details>
     </main>
-    {page!=='practice' && <PlaybackBar practice={page!=='explore'} snapshot={playback} options={options} onOptions={next => settings(next)} onPlay={() => page==='explore'?preview('block'):playPractice()} onStop={stop} volume={s.volume} onVolume={volume => settings({volume},false)} status={audioStatus} disabled={page!=='explore'&&!timeline}/>}
+    {page!=='practice' && <PlaybackBar practice={page!=='explore'} snapshot={playback} options={options} onOptions={next => settings(next)} onPlay={() => page==='explore'?preview('block'):playPractice()} onStop={stop} volume={s.volume} onVolume={volume => settings({volume},false)} source={audio.sourceName} canRetry={sampleState.status==='fallback'} onRetry={async()=>{stop();setAudioStatus('正在重试加载…');try{await audio.retrySamples();setAudioStatus(`音频已开启 · ${audio.sourceName}`)}catch{setAudioStatus('音频失败，请检查权限后重试。')}}} status={sampleState.status==='loading'?`加载钢琴采样 ${sampleState.loaded}/${sampleState.total}`:sampleState.status==='fallback'?sampleState.message:audioStatus} disabled={sampleState.status==='loading'||(page!=='explore'&&!timeline)}/>}
     </div>
   </div>
 }
