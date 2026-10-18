@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test'
 test('和弦查询、转位、音频解锁和局部键盘滚动', async ({ page }, testInfo) => {
   const errors: string[] = []
   page.on('pageerror', e => errors.push(e.message))
+  page.on('console',msg => {if(msg.type()==='error')errors.push(msg.text())})
   await page.addInitScript(() => {
     const compressor=AudioContext.prototype.createDynamicsCompressor
     AudioContext.prototype.createDynamicsCompressor=function() {
@@ -30,6 +31,8 @@ test('和弦查询、转位、音频解锁和局部键盘滚动', async ({ page 
   await page.getByRole('button', { name: '同时弹', exact: true }).click()
   await expect(page.getByRole('status')).toContainText('音频已开启')
   await expect.poll(() => page.evaluate(() => (window as unknown as { scheduled: number[] }).scheduled.length)).toBeGreaterThan(0)
+  const frequencies=await page.evaluate(() => (window as unknown as {scheduled:number[]}).scheduled)
+  for(const expected of [130.813,261.626,329.628,391.995])expect(frequencies.some(f => Math.abs(f-expected)<.03)).toBe(true)
   await expect.poll(() => page.evaluate(() => {
     const analyser=(window as unknown as { analyser: AnalyserNode }).analyser
     const samples=new Float32Array(analyser.fftSize)

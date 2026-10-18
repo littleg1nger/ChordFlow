@@ -31,3 +31,22 @@
 ## 发版前补充修正
 
 Alberti 左手根据右手最低音选择更低音区；根五八右手只保持第 1 拍，避免左手高八度与右手持续音争用琴键。开始 / 恢复播放器先清理逐步试听短音；分手时将未播放声部明确标记。49 项核心测试、类型检查、lint 与构建通过。
+
+## 阶段 F / 本地 MVP 交付
+
+- `npm ci --no-audit --no-fund` 全新安装成功（139 个包），锁文件含 Linux musl 原生可选依赖。初次安装的 npm 审计为 0 个漏洞。
+- `npm run check`：TypeScript、ESLint、49 项核心测试、生产构建通过。
+- `npm run dev`：前期由 Playwright webServer 实际启动，完成开发版本的全部路径测试。
+- `npm run preview`：实际监听 `http://127.0.0.1:4173/`。
+- `npm run test:smoke`：首页 200、HTML / JS / CSS MIME、2 个构建资源与 `/practice/saved` SPA 回退通过。
+- 设置 `E2E_BASE_URL=http://127.0.0.1:4173` 后，生产构建上的 14 项 Edge 测试通过；最后的分手标记变化又针对桌面与手机尺寸补跑 2 项播放器测试通过。
+- `docker compose config --quiet`：退出码 0。
+- `docker version`：Linux 引擎 named pipe 不存在。`docker manifest inspect` 查询两份官方镜像清单均发生注册表连接超时；标签参考官方镜像文档，不宣称本机已拉取。
+- 未执行成功：Docker 镜像构建、Nginx 语法 / 权限检查、容器首页 / 深层路径 / 缓存头 / 音频资源测试；已提供上线前执行命令与 `--production` 烟雾检查。
+- 未执行：人工听音、实体移动设备 / iOS Safari、远程服务器部署、远程 Git 推送。
+
+当前 MVP 包含四个页面、完整学习 / 练习闭环及部署文件，没有用假时长、假准确率或不可验证的“已掌握”结论。声音为合成键盘音；采样钢琴、MIDI、自由编排与扩展和弦属于后续范围。
+
+## 本地 Git 阶段
+
+`b9ed579` 工程与乐理基础；`456dcc3` 和弦探索与交互音频；`acd9125` 伴奏与音频时钟；`73db241` 进行 / 移调 / 存储；`d616e27` 响应式与恢复状态；`e2a8d05` 双手音区修正。最后一笔部署及发版检查提交以 `git log --oneline` 为准，避免文档写入自身尚不存在的哈希。

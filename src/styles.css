@@ -115,6 +115,7 @@ details p { margin: 8px 0; }
 .aside-footnote strong { font-weight: 400; color: var(--green); }
 .help-panel { margin-top: 18px; color: var(--muted); font-size: 11px; }
 .help-panel p { max-width: 800px; }
+.help-panel a { color: var(--green); }
 .transport { position: sticky; bottom: 0; background: #fcfdf9; border-top: 1px solid var(--line); padding: 17px 32px; display: flex; align-items: center; justify-content: space-between; gap: 20px; z-index: 10; min-height: 83px; }
 .source-status { display: flex; align-items: center; gap: 10px; min-width: 160px; }
 .source-status strong { font-size: 11px; display: block; font-weight: 500; }
