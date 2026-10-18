@@ -1,23 +1,26 @@
-.scroll { overflow-x: auto; max-width: 100%; padding: 3px 1px 10px; scrollbar-width: thin; }
-.piano { min-width:max(704px,calc(var(--white-key-count)*30px));background: #27312b; padding: 0 8px 8px; border-radius: 5px; }
-.rail { height: 37px; color: #b8c2b8; display: flex; justify-content: space-between; align-items: center; padding: 0 12px; font-size: 10px; letter-spacing: 1px; }
-.rail span:first-child { color: #f3f1e8; letter-spacing: 4px; font-size: 12px; }
+.scroll { overflow-x: auto; max-width: 100%; padding: 3px 1px 10px; scrollbar-width: thin; overscroll-behavior-x: contain; }
+.piano { min-width: max(704px,calc(var(--white-key-count)*30px)); background: #272a30; padding: 0 8px 8px; border-radius: 7px; box-shadow: 0 2px 4px #20242b12, inset 0 1px 0 #ffffff14; }
+.rail { height: 37px; color: #b6bbc5; display: flex; justify-content: space-between; align-items: center; padding: 0 12px; font-size: 10px; }
+.rail img { width: 31px; height: 17px; object-fit: contain; filter: brightness(0) invert(1); opacity: .8; }
 .keys { height: 190px; position: relative; }
-.key { position: absolute; border: 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: end; padding: 0 0 14px; gap: 5px; border-radius: 0 0 4px 4px; font: 11px var(--mono); }
-.white { height: 190px; background: linear-gradient(#fafaf7 92%, #edeee8); color: #56635a; border: 1px solid #c6ccc4; border-top: 0; z-index: 1; }
-.black { height: 116px; background: linear-gradient(90deg,#27312b,#39423a 70%,#1d2721); color: #b8c1b8; z-index: 2; box-shadow: 0 4px 0 #141b16, 1px 3px 3px #0005; padding-bottom: 9px; }
-.white.member { background: #e7eee4; color: var(--green); }
-.black.member { background: #456853; color: #fff; }
-.white.root { background: #cee0ce; }
-.white.left { background: #f0e1d1; color: #8d5634; }
-.black.left { background: #835a3d; color: #fff; }
-.white.sounding { background: #9bc4a6; color: #173d2b; }
-.black.sounding { background: #5e9c76; color: white; }
+.key { position: absolute; border: 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: end; padding: 0 0 14px; gap: 5px; border-radius: 0 0 4px 4px; font: 11px var(--mono); transition: none; }
+.white { height: 190px; background: linear-gradient(#fff 92%,#f0f1f4); color: #596273; border: 1px solid #c6cbd3; border-top: 0; box-shadow: inset 0 -2px 0 #dce0e6; z-index: 1; }
+.black { height: 116px; background: linear-gradient(90deg,#24272d,#363a42 70%,#1c1e23); color: #d6dae3; z-index: 2; box-shadow: 0 3px 0 #111318, inset 1px 0 1px #ffffff20; padding-bottom: 9px; }
+.white.member { background: #e7edf8; color: #294c92; }
+.black.member { background: #3d547e; color: #fff; }
+.white.root { background: #d9e3f5; }
+.white.left { background: #f1e6d5; color: #815326; }
+.black.left { background: #795b39; color: #fff; }
+.white.sounding { background: #bacff2; color: #17386f; box-shadow: inset 0 -2px 0 #8cadda; }
+.black.sounding { background: #4d74ad; color: #fff; }
+/* A key responds immediately. No transition is added to the audio/highlight path. */
+.key:active { transform: translateY(2px); }
 .marker { display: grid; place-items: center; width: 20px; height: 20px; border: 1px solid currentColor; border-radius: 50%; font: 10px var(--body); margin-bottom: 5px; }
-.fill .marker {border-style:dashed;border-radius:4px;width:25px;}
+.fill .marker { border-style: dashed; border-radius: 4px; width: 25px; }
 .sound { position: absolute; bottom: 68px; font-size: 12px; display: flex; gap: 2px; }
 .black .sound { bottom: 80px; }
 .sound small { font: 9px var(--body); }
 .middle { font: 8px var(--body); position: absolute; bottom: 2px; }
-.key:focus-visible { z-index: 4; outline-offset: -3px; outline-color: #d19a4c; }
-@media (max-width: 600px) { .piano {min-width:max(528px,calc(var(--white-key-count)*24px));}.keys,.white { height: 172px; } .black { height: 106px; }.black .note {font-size:9px;letter-spacing:-.4px;} }
+.key:focus-visible { z-index: 4; outline-offset: -3px; outline-color: var(--focus); }
+@media (hover: hover) and (pointer: fine) { .key:hover { border-color: #a0aaba; }.white:hover { box-shadow: inset 0 -2px 0 #adb8c9; } }
+@media (max-width: 600px) { .piano { min-width: max(528px,calc(var(--white-key-count)*24px)); }.keys,.white { height: 172px; }.black { height: 106px; }.black .note { font-size: 9px; letter-spacing: -.4px; } }

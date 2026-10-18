@@ -21,6 +21,28 @@ for(const path of assets) {
 const deep=await request('/practice/saved')
 assert.equal(deep.status,200,'SPA fallback')
 assert.match(await deep.text(),/<title>和序 · Chordflow<\/title>/)
+const fontsResponse=await request('/fonts/manifest.json')
+assert.equal(fontsResponse.status,200,'local font manifest')
+assert.match(fontsResponse.headers.get('content-type') || '',/application\/json/)
+const fontAssets=await fontsResponse.json()
+assert.equal(fontAssets.length,3,'two local fonts and outlined wordmark')
+for(const asset of fontAssets) {
+  const response=await request(`/fonts/${asset.file}`)
+  assert.equal(response.status,200,asset.file)
+  assert.match(response.headers.get('content-type') || '',asset.file.endsWith('.woff2')?/font\/woff2/:/image\/svg\+xml/)
+  const sha256=createHash('sha256').update(new Uint8Array(await response.arrayBuffer())).digest('hex')
+  assert.equal(sha256,asset.sha256,`font/wordmark hash ${asset.file}`)
+}
+for(const path of ['/brand-mark.svg','/favicon.svg']) {
+  const response=await request(path)
+  assert.equal(response.status,200,path)
+  assert.match(response.headers.get('content-type') || '',/image\/svg\+xml/)
+}
+for(const name of ['geist','noto-sans-sc','smiley-sans']) {
+  const response=await request(`/fonts/${name}-OFL.txt`)
+  assert.equal(response.status,200,`${name} attribution`)
+  assert.match(await response.text(),/SIL OPEN FONT LICENSE/i)
+}
 const manifestResponse=await request('/audio/salamander/manifest.json')
 assert.equal(manifestResponse.status,200,'local piano manifest')
 const manifest=await manifestResponse.json()
@@ -43,5 +65,6 @@ if(production) {
   assert.equal((await request('/healthz')).status,200,'health check')
   assert.equal((await request('/assets/missing.js')).status,404,'missing JS must not receive HTML')
   assert.equal((await request('/audio/missing.wav')).status,404,'missing sample must not receive HTML')
+  assert.equal((await request('/fonts/missing.woff2')).status,404,'missing font must not receive HTML')
 }
-process.stdout.write(`HTTP smoke passed: ${origin}, ${assets.length} built assets, 30 local MP3 samples (MIME + SHA-256), attribution, SPA fallback${production?', production headers and health check':''}\n`)
+process.stdout.write(`HTTP smoke passed: ${origin}, ${assets.length} built assets, local fonts and wordmark (MIME + SHA-256), brand icons, 30 local MP3 samples (MIME + SHA-256), attribution, SPA fallback${production?', production headers and health check':''}\n`)

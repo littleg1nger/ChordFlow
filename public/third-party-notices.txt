@@ -1,3 +1,17 @@
+Local typefaces and wordmark
+
+Geist, from https://github.com/google/fonts/tree/main/ofl/geist
+Noto Sans SC, from https://github.com/google/fonts/tree/main/ofl/notosanssc
+The local UI subsets have been renamed Chordflow Sans / Chordflow Sans SC.
+Smiley Sans (得意黑) v2.0.1, https://github.com/atelier-anchor/smiley-sans
+Only the two wordmark characters have been converted to SVG outlines.
+These typefaces are licensed under the SIL Open Font License 1.1.
+Full copyright notices and licenses accompany the files:
+/fonts/geist-OFL.txt
+/fonts/noto-sans-sc-OFL.txt
+/fonts/smiley-sans-OFL.txt
+Sources, file sizes, and SHA-256 hashes: /fonts/manifest.json
+
 React and React DOM 19.3.1 - https://github.com/facebook/react
 
 MIT License

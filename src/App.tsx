@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState,useSyncExternalStore } from 'react
 import { audio } from './audio/engine'
 import { transport } from './audio/transport'
 import { Icon } from './components/Icon'
+import { Brand } from './components/Brand'
 import { Piano } from './components/Piano'
 import { PlaybackBar } from './components/PlaybackBar'
 import { Explorer, type AuditionMode } from './features/Explorer'
@@ -146,9 +147,9 @@ export default function App() {
   </div>
   const practiceInstrument = <div className="instrument-layout"><div className="instrument-main">{keyboard}</div><aside className="playing-guide" aria-label="当前音型弹奏指导"><h3>{spec.name} · 弹奏指导</h3><div className="hand-voicing"><div><span className="left-hand">左手基础低音</span><strong>{bass.label}</strong></div><div><span className="right-hand">{current.symbol} · 右手基础配置</span><strong>{right.map(n=>n.label).join(' · ')}</strong></div></div><p>{spec.tip}</p><p>选择下方事件格可试听单步；连续练习使用键盘下方的播放器。{inProgression&&s.fill!=='none'?'加花按音与经过音以当前事件格为准。':''}</p></aside></div>
   const patternsPanel = <Patterns instrument={practiceInstrument} current={current} onChoose={choose} pattern={s.pattern} onPattern={pattern => settings({pattern,...(PATTERNS.find(p=>p.id===pattern)!.beats!==4?{fill:'none' as const}:{})})} timeline={timeline} playback={playback} onStep={step} register={s.register} onRegister={register => settings({register})} progression={inProgression} hands={s.hands}/>
-  return <div className="app-shell">
+  return <div className="app-shell" onPointerDownCapture={e=>{if(e.currentTarget.dataset.input!=='pointer')e.currentTarget.dataset.input='pointer'}} onKeyDownCapture={e=>{if(e.currentTarget.dataset.input!=='keyboard')e.currentTarget.dataset.input='keyboard'}}>
     <a className="skip-link" href="#workspace">跳到练习区</a>
-    <aside className="sidebar"><a className="brand" href="#" onClick={() => navigate('explore')}><span className="brand-mark"><Icon name="keys" size={24}/></span><span><strong>和序</strong><small translate="no">Chordflow</small></span></a><nav aria-label="主导航">{PAGES.map(p => <button key={p.id} className={page===p.id?'active':''} aria-current={page===p.id?'page':undefined} onClick={() => navigate(p.id)}><Icon name={p.icon}/>{p.name}</button>)}</nav><button className="help-link" onClick={() => {const help=document.getElementById('help') as HTMLDetailsElement;help.open=true;help.scrollIntoView({behavior:'smooth'})}}><Icon name="help" size={17}/>使用与数据说明</button></aside>
+    <aside className="sidebar"><a className="brand" href="#" aria-label="和序 · Chordflow" onClick={() => navigate('explore')}><Brand/></a><nav aria-label="主导航">{PAGES.map(p => <button key={p.id} className={page===p.id?'active':''} aria-current={page===p.id?'page':undefined} onClick={() => navigate(p.id)}><Icon name={p.icon}/>{p.name}</button>)}</nav><button className="help-link" onClick={() => {const help=document.getElementById('help') as HTMLDetailsElement;help.open=true;help.scrollIntoView({behavior:'smooth'})}}><Icon name="help" size={17}/>使用与数据说明</button></aside>
     <div className="main-shell"><header className="topbar"><h1>{pageInfo.name}</h1><span className="local-badge"><i/>本地练习 · 自动保存</span></header>
     <main id="workspace" tabIndex={-1}>
       {warning && <p className="error" role="alert">{warning}</p>}

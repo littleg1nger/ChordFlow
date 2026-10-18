@@ -1,0 +1,24 @@
+[
+  {
+    "file": "geist-ui.woff2",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/geist/Geist%5Bwght%5D.ttf",
+    "sourceSHA256": "73894e0448cae90a92b6c2f8732b7bb9acb7b94c418bff559dad4a18e1de9659",
+    "sha256": "a215164540fa2eb19a384a3d27b31f720a2187b9f5e3e317d793bc6bebb4d630",
+    "bytes": 27356,
+    "family": "Chordflow Sans"
+  },
+  {
+    "file": "noto-sans-sc-ui.woff2",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf",
+    "sourceSHA256": "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da",
+    "sha256": "2cd5940fa00d90243105b55f5dc5fb5b7c77406b53be4fa839254784534e0307",
+    "bytes": 144524,
+    "family": "Chordflow Sans SC"
+  },
+  {
+    "file": "../wordmark.svg",
+    "source": "https://github.com/atelier-anchor/smiley-sans/releases/download/v2.0.1/smiley-sans-v2.0.1.zip",
+    "font": "SmileySans-Oblique.ttf",
+    "sha256": "2ffd4d3ee944ae0ba1878793d0f68c0dea86f52ff4dea1d884f6e02160a1a7aa"
+  }
+]
