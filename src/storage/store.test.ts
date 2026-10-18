@@ -31,6 +31,14 @@ describe('有版本的本地数据边界', () => {
     expect(() => parseBackup('{"version":9}')).toThrow('版本')
     expect(() => parseBackup(' '.repeat(1_048_577))).toThrow('1 MB')
   })
+  it('旧备份缺少自动音区字段时添加默认值，保留手动范围',()=>{
+    const old=JSON.parse(JSON.stringify(defaultData()))
+    delete old.settings.autoRange
+    old.settings.octave=3
+    const next=validateData(old)
+    expect(next.settings.autoRange).toBe(true)
+    expect(next.settings.octave).toBe(3)
+  })
   it('损坏或不可用的存储可恢复到内存默认值，不悄悄写回', () => {
     expect(loadData({getItem:() => '{'}).warning).toContain('默认设置')
     expect(loadData({getItem:() => { throw new Error('denied') }}).data.settings.chord).toBe('C')

@@ -2,17 +2,18 @@ import type { Chord, Note } from '../music/theory'
 import { midiName, mod, noteAt } from '../music/theory'
 import { CHORD_TYPES } from '../data/chords'
 import styles from './Piano.module.css'
+import type {KeyboardRange} from '../music/keyboard-range'
 
-type Props = { chord: Chord; right: Note[]; bass: Note; active: number[]; octave: number; labels: 'notes' | 'degrees'; onNote: (midi: number) => void }
-export function Piano({ chord, right, bass, active, octave, labels, onNote }: Props) {
-  const start = (octave + 1) * 12
-  const keys = Array.from({ length: 37 }, (_, i) => start + i)
+type Props = { chord: Chord; right: Note[]; bass: Note; active: number[]; range:KeyboardRange; labels: 'notes' | 'degrees'; onNote: (midi: number) => void }
+export function Piano({ chord, right, bass, active, range, labels, onNote }: Props) {
+  const {start,end}=range
+  const keys = Array.from({ length:end-start+1 }, (_, i) => start + i)
   const black = (midi: number) => [1, 3, 6, 8, 10].includes(mod(midi))
   const white = keys.filter(k => !black(k))
   const spec = CHORD_TYPES.find(c => c.id === chord.type)!
-  return <div className={styles.scroll} aria-label="交互钢琴，琴键可用 Tab 与回车弹奏">
-    <div className={styles.piano} style={{ minWidth: 704 }}>
-      <div className={styles.rail}><span>和序</span><span>{midiName(start)} — {midiName(start + 36)} · C4 = 中央 C</span></div>
+  return <div className={styles.scroll} data-testid="piano" data-range-start={start} data-range-end={end} aria-label="交互钢琴，琴键可用 Tab 与回车弹奏">
+    <div className={styles.piano} style={{ minWidth:Math.max(704,white.length*30) }}>
+      <div className={styles.rail}><span>和序</span><span>{midiName(start)} — {midiName(end)} · C4 = 中央 C</span></div>
       <div className={styles.keys}>
         {keys.map(midi => {
           const isBlack = black(midi)

@@ -8,12 +8,12 @@ import type { PlaybackOptions } from '../audio/transport'
 export const STORAGE_KEY = 'chordflow:v1'
 export const MAX_BACKUP_BYTES = 1_048_576
 export type PracticeConfig = PlaybackOptions & { progression: ProgressionId; tonic: string; pattern: PatternId; register: number; voicing: 'root' | 'smooth'; barsPerChord: number }
-export type Settings = PracticeConfig & { chord: string; inversion: number; octave: number; labels: 'notes' | 'degrees'; volume: number }
+export type Settings = PracticeConfig & { chord: string; inversion: number; octave: number; autoRange:boolean; labels: 'notes' | 'degrees'; volume: number }
 export type Exercise = { id: string; name: string; config: PracticeConfig; createdAt: string }
 export type UserData = { format: 'chordflow-backup'; version: 1; settings: Settings; favorites: string[]; exercises: Exercise[]; stats: { seconds: number; completions: number } }
 
 export function defaultData(): UserData {
-  return { format: 'chordflow-backup', version: 1, settings: { chord: 'C', inversion: 0, octave: 2, labels: 'notes', volume: 55, bpm: 72, hands: 'both', loops: 0, metronome: false, countIn: false, pattern: 'arp', register: 0, progression: 'pop', tonic: 'C', voicing: 'smooth', barsPerChord: 1 }, favorites: [], exercises: [], stats: { seconds: 0, completions: 0 } }
+  return { format: 'chordflow-backup', version: 1, settings: { chord: 'C', inversion: 0, octave: 2, autoRange:true, labels: 'notes', volume: 55, bpm: 72, hands: 'both', loops: 0, metronome: false, countIn: false, pattern: 'arp', register: 0, progression: 'pop', tonic: 'C', voicing: 'smooth', barsPerChord: 1 }, favorites: [], exercises: [], stats: { seconds: 0, completions: 0 } }
 }
 function object(value: unknown, label: string): Record<string,unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(`${label}应为对象。`)
@@ -71,7 +71,7 @@ export function validateData(value: unknown): UserData {
   if (new Set(exercises.map(e => e.id)).size !== exercises.length) throw new Error('练习 ID 重复。')
   const stats = object(v.stats,'练习记录')
   return { format: 'chordflow-backup', version: 1,
-    settings: { ...config, chord: c.symbol, inversion, octave: choice(settings.octave,[2,3,4],'键盘音区'), labels: choice(settings.labels,['notes','degrees'],'琴键标记'), volume: number(settings.volume,0,100,'音量') },
+    settings: { ...config, chord: c.symbol, inversion, octave: choice(settings.octave,[2,3,4],'键盘音区'), autoRange:settings.autoRange===undefined?true:boolean(settings.autoRange,'自动音区'),labels: choice(settings.labels,['notes','degrees'],'琴键标记'), volume: number(settings.volume,0,100,'音量') },
     favorites, exercises, stats: { seconds: number(stats.seconds,0,1e10,'实际练习秒数',false), completions: number(stats.completions,0,1e9,'完成轮次') },
   }
 }

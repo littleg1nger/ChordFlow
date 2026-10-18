@@ -9,7 +9,8 @@ import { Patterns } from './features/Patterns'
 import { Progressions } from './features/Progressions'
 import { Practice } from './features/Practice'
 import { PATTERNS } from './data/patterns'
-import { leftBass, parseChord, voicing, type Chord } from './music/theory'
+import { leftBass, parseChord, voicing,midiName, type Chord } from './music/theory'
+import {demoRange,manualRange} from './music/keyboard-range'
 import { compatible, patternTimeline, PPQ } from './music/patterns'
 import { progressionChords, progressionTimeline, progressionVoicings } from './music/progressions'
 import { practiceConfig, type Exercise, type Settings } from './storage/store'
@@ -46,6 +47,8 @@ export default function App() {
     return compatible(s.pattern,single) ? patternTimeline(single,s.pattern,singleRight,s.register) : undefined
   },[page,chords,s.pattern,s.voicing,s.register,s.barsPerChord,single,singleRight])
   const bass = (page!=='explore' ? timeline?.events.find(e => e.hand==='L' && e.chordIndex===(inProgression?chordIndex:0))?.notes[0] : undefined) ?? leftBass(current,43+s.register*12)
+  const demoMidis=useMemo(()=>page!=='explore'&&timeline?timeline.events.flatMap(e=>e.notes.map(n=>n.midi)):[leftBass(single,43+s.register*12).midi,...singleRight.map(n=>n.midi)],[page,timeline,single,s.register,singleRight])
+  const keyboardRange=useMemo(()=>s.autoRange?demoRange(demoMidis):manualRange(s.octave),[s.autoRange,s.octave,demoMidis])
   const options = useMemo(() => ({bpm:s.bpm,hands:s.hands,loops:s.loops,metronome:s.metronome,countIn:s.countIn}),[s.bpm,s.hands,s.loops,s.metronome,s.countIn])
   const config = practiceConfig(s)
   const pageInfo = PAGES.find(p => p.id===page)!
@@ -128,10 +131,11 @@ export default function App() {
           {inProgression && <Progressions config={config} onConfig={next => settings(next)} chords={chords} voices={voices} index={chordIndex} onInspect={index => {if(timeline)void step(index*s.barsPerChord*spec.beats*PPQ)}} onSave={saveExercise} canSave={!!timeline && data.exercises.length<100}/>}
           <Patterns current={current} onChoose={choose} pattern={s.pattern} onPattern={pattern => settings({pattern})} timeline={timeline} playback={playback} onStep={step} register={s.register} onRegister={register => settings({register})} progression={inProgression} hands={s.hands}/>
         </>}
-        <div className="keyboard-heading"><h3>把声音放到琴键上</h3><div className="keyboard-controls"><label>音区<select aria-label="键盘起始音区" value={s.octave} onChange={e => settings({octave:Number(e.target.value)})}><option value={2}>C2–C5</option><option value={3}>C3–C6</option><option value={4}>C4–C7</option></select></label><label>标记<select aria-label="琴键标记" value={s.labels} onChange={e => settings({labels:e.target.value as Settings['labels']},false)}><option value="notes">音名</option><option value="degrees">相对度数</option></select></label></div></div>
-        <Piano chord={current} right={right} bass={bass} active={active} octave={s.octave} labels={s.labels} onNote={playNote}/>
+        <div className="keyboard-heading"><h3>把声音放到琴键上</h3><div className="keyboard-controls"><label>音区<select aria-label="键盘起始音区" value={s.autoRange?'auto':String(s.octave)} onChange={e => settings(e.target.value==='auto'?{autoRange:true}:{autoRange:false,octave:Number(e.target.value)})}><option value="auto">自动适配</option><option value="2">C2–C5</option><option value="3">C3–C6</option><option value="4">C4–C7</option></select></label><label>标记<select aria-label="琴键标记" value={s.labels} onChange={e => settings({labels:e.target.value as Settings['labels']},false)}><option value="notes">音名</option><option value="degrees">相对度数</option></select></label></div></div>
+        <p className="range-description">{s.autoRange?'自动适配':'手动音区'} · {midiName(keyboardRange.start)}–{midiName(keyboardRange.end)}{s.autoRange?(inProgression?' · 覆盖整组进行，播放时保持稳定':' · 覆盖当前演示的全部音符'):''}。此选项只调整显示，不改变演奏音高。</p>
+        <Piano chord={current} right={right} bass={bass} active={active} range={keyboardRange} labels={s.labels} onNote={playNote}/>
         <div className="keyboard-legend"><span><i className="legend-root"/>根音</span><span><i className="legend-right"/>右手</span><span><i className="legend-left"/>左手低音</span><span>● 正在发声</span><span>点击琴键，或聚焦后按回车</span></div>
-        {[bass,...right].some(n => n.midi<(s.octave+1)*12 || n.midi>(s.octave+4)*12) && <p className="small-print">部分配置音在当前可见音区外；请调整上方键盘音区查看。演奏音区需在音型设置中调整。</p>}
+        {demoMidis.some(n => n<keyboardRange.start || n>keyboardRange.end) && <p className="small-print">部分演示音在手动音区外。<button className="quiet" onClick={()=>settings({autoRange:true},false)}>恢复自动音区</button>演奏音区需在音型设置中调整。</p>}
       </section><aside className="study-aside"><span className="eyebrow">练琴小记</span><h2>先听清，<br/>再连起来。</h2><p>一次只改变一件事。先比较大三与小三，再听同一个和弦的不同转位。</p><div className="aside-rule"/><h3>一个小练习</h3><p>弹 C → Am → F → G。找到它们共有的音，试着让右手少移动一点。</p><div className="quick-chords">{['C','Am','F','G'].map(symbol => <button key={symbol} onClick={() => {choose(parseChord(symbol));setPage('explore')}}>{symbol}</button>)}</div><div className="aside-footnote">学习顺序<br/><strong>构成音 → 转位 → 伴奏 → 连接</strong></div></aside></div>}
       <details id="help" className="help-panel">
         <summary>关于和序 · Chordflow 与本地数据</summary>

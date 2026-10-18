@@ -96,6 +96,7 @@ summary { cursor: pointer; padding: 6px 0; }
 details p { margin: 8px 0; }
 .keyboard-heading { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin: 26px 0 13px; border-top: 1px solid var(--line); padding-top: 22px; flex-wrap: wrap; }
 .keyboard-heading h3 { font-size: 13px; font-weight: 500; }
+.range-description { font-size: 10px; color: var(--muted); margin: -3px 0 10px; }
 .keyboard-controls { display: flex; gap: 12px; }
 .keyboard-controls label { font-size: 10px; color: var(--muted); display: flex; align-items: center; gap: 7px; }
 .keyboard-controls select { min-height: 31px; padding: 3px 6px; font-size: 10px; background: #fafbf8; }
