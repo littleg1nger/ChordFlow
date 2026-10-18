@@ -19,6 +19,7 @@ export class Transport {
   private scheduled = new Set<string>()
   private accounted = 0
   private recordedCycles = 0
+  private firstFullCycle = 0
   onRecord?: (seconds: number, completions: number) => void
 
   constructor(private engine: Engine = audio, private frame: Frame = fn => requestAnimationFrame(fn), private cancel: (id: number) => void = id => cancelAnimationFrame(id)) {}
@@ -43,6 +44,7 @@ export class Transport {
       this.position = this.options.countIn ? -this.timeline.beats * PPQ : 0
       this.accounted = this.position
       this.recordedCycles = 0
+      this.firstFullCycle = 0
     }
     const token = ++this.generation
     this.publish('loading')
@@ -94,7 +96,7 @@ export class Transport {
   private report(tick: number, force = false) {
     const bounded = Math.max(0, Math.min(tick, this.totalTicks))
     const seconds = Math.max(0, bounded - Math.max(0, this.accounted)) * this.secondsPerTick
-    const cycles = Math.floor(bounded / (this.timeline?.ticks ?? 1920))
+    const cycles = Math.max(0,Math.floor(bounded / (this.timeline?.ticks ?? 1920))-this.firstFullCycle)
     if (force || seconds >= 1 || cycles > this.recordedCycles) {
       this.onRecord?.(seconds, Math.max(0, cycles - this.recordedCycles))
       this.accounted = tick
@@ -136,6 +138,7 @@ export class Transport {
     this.position = 0
     this.accounted = 0
     this.recordedCycles = 0
+    this.firstFullCycle = 0
     this.scheduled.clear()
     this.publish('stopped')
   }
@@ -143,6 +146,8 @@ export class Transport {
     this.pause()
     this.position = Math.max(0, Math.min(tick, (this.timeline?.ticks ?? 1920) - 1))
     this.accounted = this.position
+    this.firstFullCycle = this.position > 0 ? 1 : 0
+    this.recordedCycles = 0
     this.publish('paused')
   }
 }

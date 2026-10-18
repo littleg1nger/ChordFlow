@@ -1,5 +1,5 @@
 import type { Chord, Note } from '../music/theory'
-import { midiName, mod } from '../music/theory'
+import { midiName, mod, noteAt } from '../music/theory'
 import { CHORD_TYPES } from '../data/chords'
 import styles from './Piano.module.css'
 
@@ -21,7 +21,7 @@ export function Piano({ chord, right, bass, active, octave, labels, onNote }: Pr
           const actual = right.find(n => n.midi === midi) ?? (bass.midi === midi ? bass : undefined)
           const isRoot = actual && mod(midi) === chord.root.pc
           const sounding = active.includes(midi)
-          const label = actual?.label ?? midiName(midi)
+          const label = actual?.label ?? (match >= 0 ? noteAt(chord.notes[match],midi).label : midiName(midi))
           return <button key={midi} type="button" aria-label={`弹奏 ${label}`} data-midi={midi}
             className={[styles.key, isBlack ? styles.black : styles.white, actual ? styles.member : '', isRoot ? styles.root : '', bass.midi === midi ? styles.left : '', sounding ? styles.sounding : ''].join(' ')}
             style={{ left: `${whiteIndex / white.length * 100}%`, width: `${(isBlack ? 0.64 : 1) / white.length * 100}%` }}

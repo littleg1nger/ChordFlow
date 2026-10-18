@@ -5,11 +5,14 @@ export const PPQ = 480
 export type Hand = 'L' | 'R'
 export type MusicEvent = { tick: number; duration: number; notes: Note[]; hand: Hand; velocity: number; bar: number; chordIndex: number }
 export type Timeline = { events: MusicEvent[]; ticks: number; beats: number; bars: number; chords: Chord[] }
-export function compatible(id: PatternId, c: Chord) { return !PATTERNS.find(p => p.id === id)!.triadOnly || c.notes.length === 3 }
+export function compatible(id: PatternId, c: Chord) {
+  if (id==='root5' && !c.notes.some(n => (n.pc-c.root.pc+12)%12===7)) return false
+  return !PATTERNS.find(p => p.id === id)!.triadOnly || c.notes.length === 3
+}
 
 export function patternTimeline(c: Chord, id: PatternId, right = voicing(c, 0, 55), register = 0): Timeline {
   const spec = PATTERNS.find(p => p.id === id)!
-  if (!compatible(id, c)) throw new Error(`${spec.name}仅支持三音配置；请使用柱式、根五八或三拍子。`)
+  if (!compatible(id, c)) throw new Error(id==='root5' ? '根五八仅支持含纯五度的和弦。' : `${spec.name}仅支持三音配置；请使用柱式、根五八或三拍子。`)
   const events: MusicEvent[] = []
   const bass = leftBass(c, 43 + register * 12)
   const add = (tick: number, duration: number, notes: Note[], hand: Hand) => events.push({ tick, duration, notes, hand, velocity: hand === 'L' ? 0.6 : 0.7, bar: 0, chordIndex: 0 })

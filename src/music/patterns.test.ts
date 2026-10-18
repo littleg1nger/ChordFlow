@@ -23,6 +23,11 @@ describe('可执行伴奏时间轴', () => {
       expect(() => patternTimeline(parseChord('G7'), id)).toThrow('三音')
     }
   })
+  it('根五八不向减 / 增五度和弦加入未说明的纯五度', () => {
+    expect(compatible('root5',parseChord('Cdim'))).toBe(false)
+    expect(compatible('root5',parseChord('Caug'))).toBe(false)
+    expect(() => patternTimeline(parseChord('Cdim'),'root5')).toThrow('纯五度')
+  })
   it('三拍子的左/右手位置与时值', () => {
     const t = patternTimeline(parseChord('Am'), 'waltz')
     expect(t.ticks).toBe(1440)

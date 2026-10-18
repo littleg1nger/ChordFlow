@@ -62,3 +62,14 @@ it('左右手筛选与停止重置', async () => {
   player.stop()
   expect(player.snapshot).toMatchObject({ status: 'stopped', tick: 0, cycle: 0 })
 })
+it('从中途逐步定位后不能虚计完整轮次', async () => {
+  const { player, advance }=setup(false,1)
+  const record=vi.fn()
+  player.onRecord=record
+  player.seek(1440)
+  await player.play()
+  advance(1.1)
+  expect(player.snapshot.status).toBe('finished')
+  expect(record.mock.calls.reduce((sum,c) => sum+c[0],0)).toBeCloseTo(1)
+  expect(record.mock.calls.reduce((sum,c) => sum+c[1],0)).toBe(0)
+})
