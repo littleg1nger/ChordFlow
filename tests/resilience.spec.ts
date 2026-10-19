@@ -1,6 +1,29 @@
 import { test,expect } from '@playwright/test'
 import { defaultData, practiceConfig } from '../src/storage/store'
 
+test('旧标签页的设置操作不能覆盖另一页新存的练习和时长',async ({page,context}) => {
+  await page.goto('/')
+  const stale=await context.newPage()
+  await stale.goto('/')
+  await page.bringToFront()
+  await page.getByRole('navigation').getByRole('button',{name:'和弦进行',exact:true}).click()
+  await page.getByLabel('练习名称',{exact:true}).fill('多标签页保留验证')
+  await page.getByRole('button',{name:'保存到我的练习',exact:true}).click()
+  await page.getByRole('button',{name:'播放练习',exact:true}).click()
+  await expect.poll(async()=>page.evaluate(()=>JSON.parse(localStorage.getItem('chordflow:v1')!).stats.seconds)).toBeGreaterThan(1)
+  await page.getByRole('button',{name:'停止',exact:true}).click()
+  const before=await page.evaluate(()=>localStorage.getItem('chordflow:v1'))
+  await stale.getByLabel('根音',{exact:true}).selectOption('D')
+  await expect(stale.getByRole('alert')).toContainText('其他页面')
+  await expect(stale.locator('.local-badge')).toContainText('仅内存保存')
+  await stale.getByRole('button',{name:'收藏和弦',exact:true}).click()
+  expect(await stale.evaluate(()=>localStorage.getItem('chordflow:v1'))).toBe(before)
+  await stale.reload()
+  await stale.getByRole('navigation').getByRole('button',{name:'我的练习',exact:true}).click()
+  await expect(stale.getByRole('heading',{name:'多标签页保留验证',exact:true})).toBeVisible()
+  expect(await stale.evaluate(()=>localStorage.getItem('chordflow:v1'))).toBe(before)
+})
+
 test('损坏数据在后续操作中保持原样，仅确认导入后恢复写入',async ({page}) => {
   await page.goto('/')
   const original=defaultData()
@@ -15,6 +38,9 @@ test('损坏数据在后续操作中保持原样，仅确认导入后恢复写�
   await page.getByRole('button',{name:'收藏和弦',exact:true}).click()
   expect(await page.evaluate(() => localStorage.getItem('chordflow:v1'))).toBe(broken)
   await page.getByRole('navigation').getByRole('button',{name:'我的练习',exact:true}).click()
+  await page.getByRole('button',{name:'检查本地存储',exact:true}).click()
+  await expect(page.locator('.practice-view .inline-status')).toContainText('原始记录仍存在')
+  expect(await page.evaluate(() => localStorage.getItem('chordflow:v1'))).toBe(broken)
   await page.getByLabel('选择 JSON 备份',{exact:true}).setInputFiles({name:'valid.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(original))})
   expect(await page.evaluate(() => localStorage.getItem('chordflow:v1'))).toBe(broken)
   await page.getByRole('button',{name:'替换本地数据',exact:true}).click()

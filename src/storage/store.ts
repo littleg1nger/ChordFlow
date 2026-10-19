@@ -84,14 +84,28 @@ export function parseBackup(raw: string): UserData {
   try { parsed = JSON.parse(raw) } catch { throw new Error('无法读取 JSON，请选择完整的ChordFlow备份文件。') }
   return validateData(parsed)
 }
-export function loadData(storage: Pick<Storage,'getItem'>): { data: UserData; warning: string } {
+export function loadData(storage: Pick<Storage,'getItem'>): { data: UserData; warning: string; raw: string | null } {
+  let raw: string | null = null
   try {
-    const raw = storage.getItem(STORAGE_KEY)
-    return { data: raw ? parseBackup(raw) : defaultData(), warning: '' }
-  } catch (e) { return { data: defaultData(), warning: `本地数据未能恢复：${(e as Error).message} 已使用默认设置；原始存储不会被自动覆盖，当前操作仅保留在内存中，请在离开前导出当前练习。原始数据需另行保留排查；导入有效备份并确认替换后可恢复本地保存。` } }
+    raw = storage.getItem(STORAGE_KEY)
+    return { data: raw ? parseBackup(raw) : defaultData(), warning: '', raw }
+  } catch (e) { return { data: defaultData(), raw, warning: `本地数据未能恢复：${(e as Error).message} 已使用默认设置；原始存储不会被自动覆盖，当前操作仅保留在内存中，请在离开前导出当前练习。原始数据需另行保留排查；导入有效备份并确认替换后可恢复本地保存。` } }
 }
 export function saveData(storage: Pick<Storage,'setItem'>, data: UserData) {
-  storage.setItem(STORAGE_KEY,JSON.stringify(data))
+  const raw = JSON.stringify(data)
+  storage.setItem(STORAGE_KEY,raw)
+  return raw
+}
+export function inspectStoredData(storage: Pick<Storage,'getItem'>): string {
+  let raw: string | null
+  try { raw=storage.getItem(STORAGE_KEY) }
+  catch { return '浏览器拒绝读取本地存储。' }
+  if(raw===null) return '未找到本地记录。'
+  const bytes=new TextEncoder().encode(raw).length
+  try {
+    const data=parseBackup(raw)
+    return `记录校验通过：${data.exercises.length} 个练习、${data.favorites.length} 个收藏、累计 ${Math.round(data.stats.seconds*100)/100} 秒、${data.stats.completions} 个完成轮次；原始数据 ${bytes} 字节。`
+  } catch(e) { return `原始记录仍存在（${bytes} 字节），但校验失败：${(e as Error).message}` }
 }
 export function practiceConfig(settings: Settings): PracticeConfig {
   return validateConfig(settings)

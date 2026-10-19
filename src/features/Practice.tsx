@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { PATTERNS } from '../data/patterns'
 import { PROGRESSIONS } from '../data/progressions'
 import { progressionChords } from '../music/progressions'
-import { MAX_BACKUP_BYTES, parseBackup, type Exercise, type UserData } from '../storage/store'
+import { MAX_BACKUP_BYTES, parseBackup, inspectStoredData, type Exercise, type UserData } from '../storage/store'
 import {FILLS} from '../data/fills'
 
 type Props = { data: UserData; onOpen: (exercise: Exercise) => void; onCopy: (exercise: Exercise) => void; onDelete: (id: string) => void; onFavorite: (symbol: string) => void; onRemoveFavorite: (symbol: string) => void; onImport: (d: UserData) => void; onCreate: () => void }
@@ -29,6 +29,10 @@ export function Practice({data,onOpen,onCopy,onDelete,onFavorite,onRemoveFavorit
     setTimeout(() => URL.revokeObjectURL(url),1000)
     setMessage('备份已导出。请妥善保存 JSON 文件。')
   }
+  function inspectStorage() {
+    try { setMessage(`存储检查（${window.location.origin}）：${inspectStoredData(window.localStorage)} 检查未修改任何数据。`) }
+    catch { setMessage('浏览器拒绝读取本地存储。检查未修改任何数据。') }
+  }
   return <div className="practice-view">
     <div className="practice-heading"><div><span className="eyebrow">实际播放记录</span><h2>{Math.floor(data.stats.seconds/60)}<small>分</small>{Math.floor(data.stats.seconds%60)}<small>秒</small></h2><p>只记录练习播放器实际运行的时间，不含预备拍和暂停。</p></div><div className="completion-count"><strong>{data.stats.completions}</strong><span>完成轮次</span><small>不评估弹奏准确率</small></div></div>
     <div className="section-label"><h3>保存的练习 <span className="count-label">{data.exercises.length}</span></h3><button className="quiet" onClick={onCreate}>＋ 创建练习</button></div>
@@ -38,7 +42,7 @@ export function Practice({data,onOpen,onCopy,onDelete,onFavorite,onRemoveFavorit
     })}</div>}
     <div className="section-label"><h3>收藏的和弦</h3><span>{data.favorites.length} 个</span></div>
     {!data.favorites.length ? <p className="small-print">在和弦探索中点按星标，把常练的和弦收在这里。</p> : <div className="favorite-list">{data.favorites.map(s => <div key={s}><button onClick={() => onFavorite(s)}>{s}</button><button className="quiet" aria-label={`移除收藏 ${s}`} onClick={() => onRemoveFavorite(s)}>×</button></div>)}</div>}
-    <div className="backup-panel"><div><h3>把练习带走</h3><p>练习和累计时长不会按天清空，仅保存在当前浏览器的当前网址；域名、协议或端口不同会使用不同存储，无痕窗口关闭或清理网站数据也会影响记录。不会自动跨设备同步，换网址或清理前请先导出。</p></div><div className="backup-actions"><button onClick={exportFile}>导出 JSON 备份</button><button onClick={() => input.current?.click()}>导入 JSON 备份</button><input className="sr-only" aria-label="选择 JSON 备份" ref={input} type="file" accept=".json,application/json" onChange={e => {void importFile(e.target.files?.[0])}} /></div></div>
+    <div className="backup-panel"><div><h3>把练习带走</h3><p>练习和累计时长不会按天清空，仅保存在当前浏览器的当前网址；域名、协议或端口不同会使用不同存储，无痕窗口关闭或清理网站数据也会影响记录。不会自动跨设备同步，换网址或清理前请先导出。</p></div><div className="backup-actions"><button onClick={exportFile}>导出 JSON 备份</button><button onClick={() => input.current?.click()}>导入 JSON 备份</button><button onClick={inspectStorage}>检查本地存储</button><input className="sr-only" aria-label="选择 JSON 备份" ref={input} type="file" accept=".json,application/json" onChange={e => {void importFile(e.target.files?.[0])}} /></div></div>
     {error && <p className="error" role="alert">{error} 当前数据没有改变。</p>}
     {pending && <div className="import-preview"><h3>备份校验通过</h3><p>{pending.exercises.length} 个练习、{pending.favorites.length} 个收藏。导入将替换当前设置、练习和记录；建议先导出当前数据。</p><button className="primary" onClick={() => {onImport(pending);setPending(undefined);setMessage('已导入备份，设置与练习已恢复。')}}>替换本地数据</button><button onClick={() => setPending(undefined)}>取消导入</button></div>}
     {message && <p className="inline-status" role="status">{message}</p>}

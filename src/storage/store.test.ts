@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { defaultData, loadData, parseBackup, saveData, STORAGE_KEY, validateData } from './store'
+import { defaultData, loadData, parseBackup, saveData, STORAGE_KEY, validateData, inspectStoredData } from './store'
 
 describe('有版本的本地数据边界', () => {
+  it('只读诊断区分缺失、读取失败、校验失败与有效累计记录',()=>{
+    expect(inspectStoredData({getItem:()=>null})).toContain('未找到')
+    expect(inspectStoredData({getItem:()=>{throw new Error('denied')}})).toContain('拒绝读取')
+    expect(inspectStoredData({getItem:()=>'{broken'})).toContain('仍存在')
+    const data=defaultData()
+    data.stats={seconds:123.45,completions:7}
+    expect(inspectStoredData({getItem:()=>JSON.stringify(data)})).toContain('累计 123.45 秒、7 个完成轮次')
+  })
   it('设置、收藏、练习与真实统计往返', () => {
     const data = defaultData()
     data.favorites = ['C','Am','C/E']
