@@ -9,11 +9,17 @@ export function useUserData() {
   const [data,setData] = useState(initial.data)
   const [warning,setWarning] = useState(initial.warning)
   const latest = useRef(data)
-  const update = useCallback((change: (previous: UserData) => UserData) => {
+  const preserveOriginal = useRef(Boolean(initial.warning))
+  const update = useCallback((change: (previous: UserData) => UserData, replaceOriginal = false) => {
     const next = change(latest.current)
     latest.current=next
     setData(next)
-    try { saveData(window.localStorage,next) }
+    if(preserveOriginal.current && !replaceOriginal) return
+    try {
+      saveData(window.localStorage,next)
+      preserveOriginal.current=false
+      setWarning('')
+    }
     catch { setWarning('本地保存失败，当前练习仍保留在内存中。请到“我的练习”导出备份，并检查浏览器存储空间或权限。') }
   },[])
   return {data,update,warning}

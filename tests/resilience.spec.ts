@@ -1,10 +1,36 @@
 import { test,expect } from '@playwright/test'
+import { defaultData, practiceConfig } from '../src/storage/store'
 
-test('存储失败仍能练习并提示导出，损坏数据不自动覆盖',async ({page}) => {
-  await page.addInitScript(() => {localStorage.setItem('chordflow:v1','{broken')})
+test('损坏数据在后续操作中保持原样，仅确认导入后恢复写入',async ({page}) => {
   await page.goto('/')
+  const original=defaultData()
+  original.stats={seconds:123,completions:2}
+  original.exercises=[{id:'previous',name:'昨天的练习',config:practiceConfig(original.settings),createdAt:'2026-10-18T12:00:00.000Z'}]
+  const broken=JSON.stringify({...original,settings:{...original.settings,bpm:999}})
+  await page.evaluate(raw=>localStorage.setItem('chordflow:v1',raw),broken)
+  await page.reload()
   await expect(page.getByRole('alert')).toContainText('本地数据未能恢复')
-  expect(await page.evaluate(() => localStorage.getItem('chordflow:v1'))).toBe('{broken')
+  await expect(page.locator('.local-badge')).toContainText('仅内存保存')
+  await page.getByLabel('根音',{exact:true}).selectOption('D')
+  await page.getByRole('button',{name:'收藏和弦',exact:true}).click()
+  expect(await page.evaluate(() => localStorage.getItem('chordflow:v1'))).toBe(broken)
+  await page.getByRole('navigation').getByRole('button',{name:'我的练习',exact:true}).click()
+  await page.getByLabel('选择 JSON 备份',{exact:true}).setInputFiles({name:'valid.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(original))})
+  expect(await page.evaluate(() => localStorage.getItem('chordflow:v1'))).toBe(broken)
+  await page.getByRole('button',{name:'替换本地数据',exact:true}).click()
+  await expect(page.getByRole('alert')).toHaveCount(0)
+  await expect(page.locator('.local-badge')).toContainText('自动保存')
+  await expect(page.getByRole('heading',{name:'昨天的练习',exact:true})).toBeVisible()
+  await page.reload()
+  await page.getByLabel('根音',{exact:true}).selectOption('E')
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('chordflow:v1')!))
+  expect(saved.stats).toEqual(original.stats)
+  expect(saved.exercises).toEqual(original.exercises)
+  expect(saved.settings.chord).toBe('E')
+})
+
+test('存储失败仍能练习并提示导出',async ({page}) => {
+  await page.goto('/')
   await page.evaluate(() => {Storage.prototype.setItem=() => {throw new DOMException('Quota exceeded','QuotaExceededError')}})
   await page.getByRole('button',{name:'收藏和弦',exact:true}).click()
   await expect(page.getByRole('alert')).toContainText('本地保存失败')

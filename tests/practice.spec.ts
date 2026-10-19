@@ -1,6 +1,26 @@
 import { readFile } from 'node:fs/promises'
 import { test, expect } from '@playwright/test'
 
+test('跨天并关闭页面重开后保留练习和累计时长',async ({page,context}) => {
+  await page.clock.setFixedTime(new Date('2026-10-18T23:58:00+08:00'))
+  await page.goto('/')
+  await page.getByRole('navigation').getByRole('button',{name:'和弦进行',exact:true}).click()
+  await page.getByLabel('练习名称',{exact:true}).fill('跨天保存验证')
+  await page.getByRole('button',{name:'保存到我的练习',exact:true}).click()
+  await page.getByRole('button',{name:'播放练习',exact:true}).click()
+  await expect.poll(async()=>page.evaluate(()=>JSON.parse(localStorage.getItem('chordflow:v1')!).stats.seconds)).toBeGreaterThan(1)
+  await page.getByRole('button',{name:'停止',exact:true}).click()
+  const before=await page.evaluate(()=>localStorage.getItem('chordflow:v1'))
+  await page.close()
+  const next=await context.newPage()
+  await next.clock.setFixedTime(new Date('2026-10-19T09:00:00+08:00'))
+  await next.goto('/')
+  await next.getByRole('navigation').getByRole('button',{name:'我的练习',exact:true}).click()
+  await expect(next.getByRole('heading',{name:'跨天保存验证',exact:true})).toBeVisible()
+  expect(await next.evaluate(()=>localStorage.getItem('chordflow:v1'))).toBe(before)
+  await expect(next.locator('.completion-count strong')).toHaveText(String(JSON.parse(before!).stats.completions))
+})
+
 test('进行真实移调、保存刷新、完成记录及备份往返', async ({ page },testInfo) => {
   const errors: string[]=[]
   page.on('pageerror',e => errors.push(e.message))

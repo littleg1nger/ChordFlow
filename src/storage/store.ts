@@ -88,7 +88,7 @@ export function loadData(storage: Pick<Storage,'getItem'>): { data: UserData; wa
   try {
     const raw = storage.getItem(STORAGE_KEY)
     return { data: raw ? parseBackup(raw) : defaultData(), warning: '' }
-  } catch (e) { return { data: defaultData(), warning: `本地数据未能恢复：${(e as Error).message} 已使用默认设置；原始值暂保留，后续操作会覆盖，请先备份。` } }
+  } catch (e) { return { data: defaultData(), warning: `本地数据未能恢复：${(e as Error).message} 已使用默认设置；原始存储不会被自动覆盖，当前操作仅保留在内存中，请在离开前导出当前练习。原始数据需另行保留排查；导入有效备份并确认替换后可恢复本地保存。` } }
 }
 export function saveData(storage: Pick<Storage,'setItem'>, data: UserData) {
   storage.setItem(STORAGE_KEY,JSON.stringify(data))
