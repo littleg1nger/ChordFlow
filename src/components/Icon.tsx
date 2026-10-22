@@ -10,7 +10,6 @@ export function Icon({ name, size = 20 }: Props) {
     stop: <rect x="6" y="6" width="12" height="12" rx="1" />,
     volume: <path d="m11 5-6 4H2v6h3l6 4V5Zm4 3a7 7 0 0 1 0 8m3-11a11 11 0 0 1 0 14" />,
     help: <><circle cx="12" cy="12" r="9" /><path d="M9.5 8.5a2.5 2.5 0 1 1 4 2c-1 .7-1.5 1-1.5 2.5m0 3h.01" /></>,
-    arrow: <path d="M4 12h16m-6-6 6 6-6 6" />,
     search: <><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></>,
     star: <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" />,
   }

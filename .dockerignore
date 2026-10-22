@@ -14,5 +14,4 @@ playwright-report
 *.log
 docs
 tests
-chordflow_codex_prompts_v2.md
 chordflow_prompts.md

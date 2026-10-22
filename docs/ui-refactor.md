@@ -45,4 +45,4 @@ python C:/Users/asus/.codex/skills/.system/skill-installer/scripts/install-skill
 
 新增回归覆盖文档高度、外层无法额外滚动、进行底部位置及保存入口。重新检查桌面与手机截图、搜索提交和完整项目检查。
 
-验证结果：`npx playwright test tests/layout.spec.ts tests/chords.spec.ts` 10 项通过；`npm run check` 的类型检查、ESLint、61 个核心测试和生产构建全部通过。另用实际 Edge 验证输入后 Enter 搜索、Tab 到提交按钮后 Enter 搜索。修正截图为 `docs/screenshots/progression-bottom-2048.png` 与 `docs/screenshots/search-focus.png`，三种尺寸的探索页截图也已更新。
+验证结果：`npx playwright test tests/layout.spec.ts tests/chords.spec.ts` 10 项通过；`npm run check` 的类型检查、ESLint、61 个核心测试和生产构建全部通过。另用实际 Edge 验证输入后 Enter 搜索、Tab 到提交按钮后 Enter 搜索。当前截图为 `docs/screenshots/progression-bottom-2048.png` 与 `docs/screenshots/controls-focus.png`，三种尺寸的探索页截图也已更新。2026-10-22 清理时用完整控件截图替代了重复的搜索框局部截图。

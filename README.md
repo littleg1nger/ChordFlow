@@ -34,7 +34,7 @@ npm run preview
 - 7 组经典进行：包含卡农、4536251、爵士 1625；调内真实移调，每和弦 1 / 2 / 4 小节，原位 / 平稳连接、当前 / 下一和弦提示。
 - 3 类进行加花：和弦内音回转、调内经过音、低音连接；只在换和弦前的小节末替换事件，逐步显示音高 / 手别 / 时值 / 作用。6 个跟练样例可以直接载入、修改并保存。
 - 个人练习：创建保存、复制删除、收藏、实际播放时间 / 完成轮次，带版本的 JSON 导入导出；刷新恢复设置与练习。
-- 暖白与墨绿界面，桌面 / 平板 / 手机布局、局部键盘滚动、失败恢复与减少动态效果支持。
+- 冷白与石墨灰练习工作台、蓝绿色 ChordFlow 品牌，桌面 / 平板 / 手机布局、局部键盘滚动、失败恢复与减少动态效果支持。
 
 ## 浏览器与 HTTP 测试
 
@@ -54,12 +54,20 @@ npm run test:e2e
 
 ## 文档与限制
 
-[产品范围](docs/product.md) · [设计规范](docs/design.md) · [音乐模型](docs/music-model.md) · [音源与许可](docs/audio.md) · [部署](docs/deploy.md) · [验证](docs/verification.md) · [第二轮更新](docs/iteration-02.md) · [接手说明](AGENTS.md)
+[产品范围](docs/product.md) · [设计规范](docs/design.md) · [音乐模型](docs/music-model.md) · [音源与许可](docs/audio.md) · [部署](docs/deploy.md) · [验证](docs/verification.md) · [第二轮更新](docs/iteration-02.md) · [存储排查与保护](docs/persistence-fix.md) · [接手说明](AGENTS.md)
 
 钢琴是 Salamander 单层 MP3 子集，未实现原库完整的多力度层、踏板共振与释放噪声。尚无 MIDI / 麦克风识别、自由编排和九 / 十一 / 十三和弦。平稳连接是有限音区内的启发式建议，不优化整个循环；加花会修改实际事件，不改变完整和弦的理论构成。当前加花限 4/4 拍。浏览器间不自动同步数据；升级或换域名前请导出备份。
 
-分解与加花均为原创教学编配；卡农只提供和声骨架，不提供整曲旋律或第三方演奏录音。未使用外部图片和字体。钢琴采样作者 Alexander Holm，CC BY 3.0，署名与来源位于 `public/audio/salamander/LICENSE.txt`；文件哈希与原始 URL 位于同目录 manifest。详见音源文档。
+分解与加花均为原创教学编配；卡农只提供和声骨架，不提供整曲旋律或第三方演奏录音。未使用外部图片，字体以本地 Geist / Noto Sans SC 子集提供，来源、哈希与 OFL 许可位于 `public/fonts/`。钢琴采样作者 Alexander Holm，CC BY 3.0，署名与来源位于 `public/audio/salamander/LICENSE.txt`；文件哈希与原始 URL 位于同目录 manifest。详见音源文档。
 
 运行时使用 React / React DOM，MIT 许可声明随站点保存在 `public/third-party-notices.txt`；构建和测试依赖的许可随 npm 包提供。
 
 依赖兼容性已对照 [React](https://react.dev/learn)、[Vite Node 要求](https://vite.dev/guide/)、[Vitest](https://vitest.dev/guide/) 与 [Web Audio](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API) 官方说明；安装包的 engines / peerDependencies 与精确版本见锁文件。
+
+## 可再生文件
+
+`.cache/` 是字体重建下载、工具及临时视觉检查产物；`dist/` 是 `npm run build` 的输出；`test-results/`、`playwright-report/` 和 `coverage/` 是测试产物。这些目录不纳入 Git，清理后可由对应命令重新生成，运行项目不依赖 `.cache/`。字体重建方法见 [历史实现记录](docs/visual-polish.md)，正式字体和采样始终保留在 `public/`。
+
+2026-10-22 清理了上述临时文件和重复的搜索框截图，统一引用 `docs/screenshots/controls-focus.png`，并移除已停用的箭头图标。保留依赖、源码、测试、部署配置、素材许可、需求及验证记录。个人练习保存在浏览器中，不在这些生成目录内。
+
+清理后 `npm run check` 通过（类型检查、ESLint、62 项核心测试、生产构建），搜索与布局的 10 项 Edge 桌面 / 手机回归通过。验证生成的构建和测试产物再次移除，需要部署时重新执行 `npm run build`。
